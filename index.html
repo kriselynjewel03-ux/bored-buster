@@ -247,7 +247,7 @@ chips($("gl"),[[0,"🟢 Easy"],[1,"🟡 Medium"],[2,"🔴 Hard"]],()=>lvl,k=>{lv
 chips($("gtabs"),GN.map((n,i)=>[i,n]),()=>gsel,k=>{gsel=k;run()});
 
 function mem(){
-  const E=["🍎","🐱","🌻","🚀","🎸","🍰","🦋","⚽","🍕","🐼","🎲","🌈"].slice(0,[6,8,12][lvl]);
+  const E=["🍎","🐱","🌻","🚀","🎸","🍰","🦋","⚽","🍕","🐼","🎲","🌈","🐙","🎨","🍩","🌙","🐢","🎧","🚲","🍉","🦄","⛄","🔔","🍄"].sort(()=>Math.random()-.5).slice(0,[6,8,12][lvl]);
   const d=[...E,...E].sort(()=>Math.random()-.5);
   let open=[],moves=0,found=0,lock=false;
   G.innerHTML='<div class="info"><span id="mm">Moves: 0</span><span id="mb"></span></div><div class="grid" id="mg"></div>';
@@ -295,10 +295,18 @@ function pat(){
   $("ps").onclick=()=>{seq=Array.from({length:[0,0,2][lvl]},()=>Math.floor(Math.random()*4));$("ps").disabled=true;round()};
 }
 
+const seenW=new Set();
+const WX=[[["water","You drink it"],["house","Where you live"],["bunny","Hops and has long ears"],["lemon","Sour yellow fruit"],["cloud","White and floats in the sky"],["candy","Sweet treat"],["pearl","Found inside an oyster"],["tulip","Spring flower"],["zebra","Striped animal"],["train","Runs on rails"],["storm","Thunder and lightning"],["honey","Made by bees"]],
+[["blanket","Keeps you warm in bed"],["journey","A long trip"],["thunder","Loud noise in a storm"],["diamond","Hard, sparkling gem"],["penguin","Bird that cannot fly and loves the cold"],["village","Smaller than a town"],["pyramid","Ancient tomb in Egypt"],["captain","Leads a ship"],["bicycle","Two wheels and pedals"],["lantern","A portable light"],["fortune","Luck or wealth"],["volcano","Mountain that erupts"]],
+[["encyclopedia","Book full of facts"],["laboratory","Where scientists experiment"],["archipelago","Group of many islands"],["bureaucracy","Complicated official procedures"],["entrepreneur","Starts a business"],["nightingale","Bird known for its song"],["electricity","Powers lights and phones"],["thermometer","Measures temperature"],["perseverance","Not giving up"],["kaleidoscope","Tube of changing colored patterns"],["hemisphere","Half of the Earth"],["constellation","Pattern of stars"]]];
 function wrd(){
   const W0=[["planet","Earth is one"],["guitar","Has six strings"],["pizza","Italian favorite"],["ocean","Big and salty"],["garden","Where flowers grow"],["rocket","Goes to space"],["butter","Spread on toast"],["window","Glass in a wall"],["sunflower","Tall yellow flower"],["kitchen","Where you cook"],["rainbow","Colors after rain"],["library","Full of books"],["holiday","A break from work"],["chocolate","Sweet and brown"],["mountain","Higher than a hill"],["umbrella","Keeps you dry"]];
   const WB=[[["apple","A red or green fruit"],["happy","Opposite of sad"],["music","You listen to it"],["phone","You are probably holding it"],["bread","Toasted for breakfast"],["river","Flows to the sea"],["smile","Shows you are happy"],["beach","Sand and waves"],["tiger","Big striped cat"],["dream","You have them when asleep"]],W0,[["adventure","An exciting journey"],["knowledge","What studying gives you"],["telescope","Looks at the stars"],["algorithm","Step-by-step rules for a computer"],["democracy","Rule by the people"],["pineapple","Spiky tropical fruit"],["atmosphere","Air around Earth"],["architecture","Designing buildings"],["photograph","Image taken by a camera"],["microscope","Shows tiny things"],["friendship","Bond between buddies"]]];
-  const W=WB[lvl].slice().sort(()=>Math.random()-.5).slice(0,8);
+  const wp=WB[lvl].concat(WX[lvl]);
+  let wf=wp.filter(w=>!seenW.has(w[0]));
+  if(wf.length<8){seenW.clear();wf=wp}
+  const W=wf.slice().sort(()=>Math.random()-.5).slice(0,8);
+  W.forEach(w=>seenW.add(w[0]));
   let i=0,sc=0;
   const scr=w=>{let s;do{s=[...w].sort(()=>Math.random()-.5).join("")}while(s===w);return s};
   G.innerHTML='<div class="info"><span id="ws">Score: 0</span><button class="pill" id="wk">Skip</button></div><div class="scr" id="wz"></div><p id="wh" style="text-align:center"></p><input class="inp" id="wi" autocomplete="off" autocapitalize="off" aria-label="Your answer"><p id="wm" style="text-align:center;min-height:1.5em;margin-top:10px"></p><button class="pill main" id="wc">Check</button>';
@@ -329,9 +337,9 @@ function mth(){
   function gen(){
     const a=R(9)+3,b=R(9)+3,c=R(8)+2;
     if(lvl===0){const x=R(20)+1,y=R(20)+1;return R(2)?[x+" + "+y,x+y]:[(x+y)+" − "+x,y]}
-    if(lvl===1){const x=R(70)+20,y=R(70)+20;return R(2)?[a+" × "+b,a*b]:[x+" + "+y,x+y]}
-    const k=R(3),x=R(400)+400,y=R(300)+50;
-    return k===0?[(a+10)+" × "+b,(a+10)*b]:k===1?["("+a+" + "+b+") × "+c,(a+b)*c]:[x+" − "+y,x-y];
+    if(lvl===1){const x=R(70)+20,y=R(70)+20,m=R(4);return m===0?[a+" × "+b,a*b]:m===1?[x+" + "+y,x+y]:m===2?[(x+y)+" − "+y,x]:[(a*b)+" ÷ "+a,b]}
+    const k=R(6),x=R(400)+400,y=R(300)+50,n=R(15)+11,q=R(12)+6,d=R(9)+3,p=[10,20,25,50][R(4)],base=(R(10)+2)*20;
+    return k===0?[(a+10)+" × "+b,(a+10)*b]:k===1?["("+a+" + "+b+") × "+c,(a+b)*c]:k===2?[x+" − "+y,x-y]:k===3?[n+" × "+n,n*n]:k===4?[(q*d)+" ÷ "+d,q]:[p+"% of "+base,base*p/100];
   }
   G.innerHTML='<div class="info"><span id="ms">Score: 0</span><span id="mt">⏱ 30</span></div><div class="scr" id="mq"></div><input class="inp" id="mi" inputmode="numeric" autocomplete="off" aria-label="Your answer"><p id="mm2" style="text-align:center;min-height:1.5em;margin-top:10px"></p>';
   const mt=$("mt"),mi=$("mi");
@@ -349,11 +357,19 @@ function mth(){
   ask();
 }
 
+const seenQ=new Set();
+const TX=[[["How many days are in a leap year?","366",["365","364","367"]],["Which animal is known as the king of the jungle?","Lion",["Tiger","Elephant","Gorilla"]],["What color do you get when you mix blue and yellow?","Green",["Orange","Purple","Brown"]],["How many sides does a triangle have?","3",["4","5","6"]],["Which planet do we live on?","Earth",["Mars","Venus","Saturn"]],["What is the tallest animal in the world?","Giraffe",["Elephant","Horse","Camel"]],["Which season comes after winter?","Spring",["Summer","Autumn","Monsoon"]],["Which gas do humans need to breathe to live?","Oxygen",["Nitrogen","Helium","Carbon dioxide"]],["In which country is the Eiffel Tower?","France",["Italy","Spain","Germany"]],["What is the capital of South Korea?","Seoul",["Busan","Tokyo","Incheon"]],["How many colors are in a rainbow?","7",["5","6","8"]],["Which language is mostly spoken in Brazil?","Portuguese",["Spanish","English","French"]],["What is the largest planet in our solar system?","Jupiter",["Saturn","Neptune","Earth"]]],
+[["What is the smallest country in the world?","Vatican City",["Monaco","Malta","San Marino"]],["What is the hardest natural substance?","Diamond",["Gold","Quartz","Iron"]],["Who wrote Romeo and Juliet?","William Shakespeare",["Charles Dickens","Jane Austen","Mark Twain"]],["Which blood cells fight infection?","White blood cells",["Red blood cells","Platelets","Plasma"]],["What is the currency of Japan?","Yen",["Won","Yuan","Ringgit"]],["What is the largest hot desert in the world?","Sahara",["Gobi","Kalahari","Arabian"]],["Which planet is famous for its rings?","Saturn",["Jupiter","Uranus","Mars"]],["What does DNA stand for?","Deoxyribonucleic acid",["Dioxyribonucleic acid","Deoxyribose nucleic anhydride","Double nitrogen acid"]],["Which country gave the Statue of Liberty to the USA?","France",["England","Spain","Italy"]],["Who was the first person to walk on the Moon?","Neil Armstrong",["Buzz Aldrin","Yuri Gagarin","John Glenn"]],["What is the capital of Canada?","Ottawa",["Toronto","Vancouver","Montreal"]],["Which ocean lies between Africa and Australia?","Indian",["Atlantic","Pacific","Arctic"]],["Who wrote the novel Noli Me Tangere?","José Rizal",["Francisco Balagtas","Andres Bonifacio","Apolinario Mabini"]],["Which is the longest river in Africa?","Nile",["Congo","Niger","Zambezi"]]],
+[["Who painted The Persistence of Memory?","Salvador Dalí",["Pablo Picasso","René Magritte","Joan Miró"]],["What is the capital of Turkey?","Ankara",["Istanbul","Izmir","Antalya"]],["In which year did World War II end?","1945",["1943","1946","1944"]],["Which scientist discovered penicillin?","Alexander Fleming",["Louis Pasteur","Marie Curie","Joseph Lister"]],["What is the largest moon of Saturn?","Titan",["Europa","Ganymede","Enceladus"]],["Which philosopher wrote The Republic?","Plato",["Aristotle","Socrates","Descartes"]],["What is the SI unit of force?","Newton",["Joule","Watt","Pascal"]],["In which country is the city of Timbuktu?","Mali",["Niger","Chad","Senegal"]],["What is the chemical formula of table salt?","NaCl",["KCl","NaOH","CaCO3"]],["Who described the three laws of planetary motion?","Johannes Kepler",["Galileo Galilei","Isaac Newton","Nicolaus Copernicus"]],["What is the deepest known point in the world's oceans?","Challenger Deep",["Tonga Trench","Java Trench","Puerto Rico Trench"]],["Which empire was ruled by Genghis Khan?","Mongol Empire",["Ottoman Empire","Persian Empire","Roman Empire"]],["How many chromosomes do humans normally have?","46",["44","48","23"]],["In which year did the Titanic sink?","1912",["1905","1915","1921"]]]];
 function tri(){
   const B=[[["Which planet is known as the Red Planet?","Mars",["Venus","Jupiter","Mercury"]],["How many continents are there?","7",["5","6","8"]],["What is the capital of Japan?","Tokyo",["Seoul","Beijing","Bangkok"]],["What is the largest animal on Earth?","Blue whale",["Elephant","Giraffe","Great white shark"]],["Which ocean is the largest?","Pacific",["Atlantic","Indian","Arctic"]],["What is the capital of the Philippines?","Manila",["Cebu","Davao","Quezon City"]]],
   [["Who painted the Mona Lisa?","Leonardo da Vinci",["Michelangelo","Raphael","Van Gogh"]],["What is the chemical symbol for gold?","Au",["Ag","Gd","Go"]],["In which year did humans first land on the Moon?","1969",["1959","1972","1965"]],["How many bones does an adult human have?","206",["186","250","312"]],["What is the capital of Australia?","Canberra",["Sydney","Melbourne","Perth"]],["What is the national flower of the Philippines?","Sampaguita",["Sunflower","Rose","Orchid"]]],
   [["Who wrote One Hundred Years of Solitude?","Gabriel García Márquez",["Jorge Luis Borges","Isabel Allende","Pablo Neruda"]],["What is the longest river in Europe?","Volga",["Danube","Rhine","Seine"]],["In which year did the Berlin Wall fall?","1989",["1987","1991","1985"]],["What is the capital of Kazakhstan?","Astana",["Almaty","Tashkent","Bishkek"]],["Who developed the first smallpox vaccine?","Edward Jenner",["Louis Pasteur","Jonas Salk","Alexander Fleming"]],["What is the smallest prime number greater than 20?","23",["21","25","27"]]]];
-  const Q=B[lvl].slice().sort(()=>Math.random()-.5).slice(0,5),my=gtoken;
+  const pool=B[lvl].concat(TX[lvl]);
+  let fresh=pool.filter(q=>!seenQ.has(q[0]));
+  if(fresh.length<5){seenQ.clear();fresh=pool}
+  const Q=fresh.slice().sort(()=>Math.random()-.5).slice(0,5),my=gtoken;
+  Q.forEach(q=>seenQ.add(q[0]));
   let i=0,sc=0;
   function next(){
     if(my!==gtoken)return;
