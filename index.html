@@ -73,6 +73,7 @@ h2{font-size:1rem;margin:0 0 8px}
 .ans small{display:block;margin-top:10px;color:var(--cmute)}
 @media (prefers-reduced-motion:reduce){.big,.card.pop{animation:none}.chip,.big{transition:none}}
 </style>
+<script data-goatcounter="https://boredbuster.goatcounter.com/count" data-goatcounter-settings='{"no_onload":true}' async src="//gc.zgo.at/count.js"></script>
 </head>
 <body>
 <main>
@@ -93,6 +94,7 @@ h2{font-size:1rem;margin:0 0 8px}
 <div class="saved" id="saved"></div>
 <a class="gobtn" href="#games">🎮 Play brain games<small>5 games, 3 levels: easy, medium, hard</small></a>
 <button class="chip" id="share" style="display:block;margin:20px auto 0">📤 Share with a friend</button>
+<p style="text-align:center;font-size:.85rem;opacity:.85;margin-top:24px">Visits are counted anonymously. No names or personal details are collected, except answers you choose to send.</p>
 </div>
 
 <section class="games" id="gamesView" hidden>
@@ -378,8 +380,16 @@ $("share").onclick=async()=>{
     await navigator.clipboard.writeText(d.url);$("share").textContent="✅ Link copied!";
   }catch(e){if(e.name!=="AbortError")$("share").textContent="Copy the link from your browser bar"}
 };
+function track(p){
+  let n=0;
+  (function t(){
+    if(window.goatcounter&&window.goatcounter.count)window.goatcounter.count({path:p});
+    else if(n++<20)setTimeout(t,300);
+  })();
+}
 function route(){
   const g=location.hash==="#games";
+  track(g?"/brain-games":"/home");
   $("home").hidden=g;$("gamesView").hidden=!g;
   if(!g&&gsel>=0){gtoken++;gsel=-1;G.innerHTML="<p>Pick a game above to start playing.</p>";$("gtabs").querySelectorAll(".chip").forEach(c=>c.setAttribute("aria-pressed","false"))}
   window.scrollTo(0,0);
