@@ -204,7 +204,7 @@ function show(a){
   $("send").onclick=async()=>{
     const v=$("ansBox").value.trim();
     if(!v){$("ansMsg").textContent="Please write something first.";return}
-    const fd=new FormData();fd.append("entry.2084916072",a[0]);fd.append("entry.60325395",v);
+    const fd=new URLSearchParams();fd.append("entry.2084916072",a[0]);fd.append("entry.60325395",v);
     $("send").disabled=true;
     try{
       await fetch(FORM_URL,{method:"POST",mode:"no-cors",body:fd});
