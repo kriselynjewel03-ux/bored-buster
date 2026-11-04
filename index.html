@@ -66,6 +66,10 @@ h2{font-size:1rem;margin:0 0 8px}
 .tabs a{flex:1;text-align:center;text-decoration:none;color:#fff;font-weight:700;padding:12px 8px;border-radius:999px}
 .tabs a[aria-current="page"]{background:#fff;color:#2a1a8a;box-shadow:0 3px 0 rgba(0,0,0,.22)}
 .tabs a:focus-visible{outline:3px solid #fff;outline-offset:2px}
+.tabs a{padding:12px 4px;font-size:.92rem}
+.sk{display:grid;grid-template-columns:112px 1fr 44px;gap:8px;align-items:center;margin:10px 0}
+.bar{background:rgba(128,128,128,.25);border-radius:99px;height:12px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--acc);border-radius:99px}
 .gobtn{display:block;text-align:center;text-decoration:none;background:#fff;color:#2a1a8a;font:700 1.25rem Georgia,serif;border-radius:24px;padding:22px 16px;margin-top:26px;box-shadow:0 8px 0 rgba(0,0,0,.28)}
 .gobtn small{display:block;font:400 .9rem "Trebuchet MS",system-ui,sans-serif;opacity:.8;margin-top:2px}
 .gobtn:active{transform:translateY(5px);box-shadow:0 3px 0 rgba(0,0,0,.28)}
@@ -81,7 +85,7 @@ h2{font-size:1rem;margin:0 0 8px}
 </head>
 <body>
 <main>
-<nav class="tabs" aria-label="Sections"><a href="#home" id="tabH" aria-current="page">✨ Activities</a><a href="#games" id="tabG">🎮 Brain games</a></nav>
+<nav class="tabs" aria-label="Sections"><a href="#home" id="tabH" aria-current="page">✨ Activities</a><a href="#games" id="tabG">🎮 Games</a><a href="#brain" id="tabB">🧠 My brain</a></nav>
 <div id="home">
 <h1>Bored Buster <span>⚡</span></h1>
 <p class="sub">Tell us how you feel and how long you have. We’ll pick something.</p>
@@ -109,6 +113,10 @@ h2{font-size:1rem;margin:0 0 8px}
 <div class="row" id="gtabs"></div>
 <div class="row" id="gt" hidden></div>
 <div class="arena" id="arena"><p>Pick a game above to start playing.</p></div>
+</section>
+<section id="brainView" hidden>
+<h2>🧠 Your brain profile</h2>
+<div class="arena" id="brainBox"></div>
 </section>
 </main>
 
@@ -160,14 +168,14 @@ const EMO={"Brain game":"🧠","Memory game":"🧩","Would you rather":"🤔","C
 const CATS=Object.keys(EMO);
 const LEVELS=[[0,"Rookie"],[100,"Fun finder"],[300,"Boredom buster"],[700,"Legend"]];
 const KEY="boredBusterV1";
-let S={streak:0,last:"",points:0,best:{},saved:[]};
+let S={streak:0,last:"",points:0,best:{},saved:[],skill:{},cases:[]};
 try{const r=JSON.parse(localStorage.getItem(KEY)||"null");if(r&&typeof r==="object")S=Object.assign(S,r)}catch(e){}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 const dayStr=d=>d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();
-function award(pts){
+function award(pts,skill){
   const t=dayStr(new Date());
   if(S.last!==t){const y=new Date();y.setDate(y.getDate()-1);S.streak=S.last===dayStr(y)?S.streak+1:1;S.last=t}
-  S.points+=pts;save();stat();
+  S.points+=pts;if(skill){S.skill=S.skill||{};S.skill[skill]=(S.skill[skill]||0)+pts}save();stat();
 }
 let mood="t",time=15,last=-1,done=0,busy=false;const saved=Array.isArray(S.saved)?S.saved.slice():[],seen=new Set();
 const $=id=>document.getElementById(id);
@@ -258,9 +266,9 @@ function renderSaved(){
 }
 $("go").onclick=spin;
 
-const G=$("arena"),GN=["🧩 Memory","🔴 Pattern","🔤 Words","➕ Quick math","🧠 Trivia","🎲 Surprise me"];
+const G=$("arena"),GN=["🧩 Memory","🔴 Pattern","🔤 Words","➕ Quick math","🧠 Trivia","🎲 Surprise me","📅 Daily word","🕵️ Mystery"];
 let gsel=-1,lvl=1,gtoken=0,topic=0;const bestMoves=S.best.mem||[0,0,0];
-function run(){gtoken++;$("gt").hidden=gsel!==4;const F=[mem,pat,wrd,mth,tri];F[gsel===5?Math.floor(Math.random()*5):gsel]()}
+function run(){gtoken++;$("gt").hidden=gsel!==4;const F=[mem,pat,wrd,mth,tri,0,daily,mys];F[gsel===5?Math.floor(Math.random()*5):gsel]()}
 chips($("gl"),[[0,"🟢 Easy"],[1,"🟡 Medium"],[2,"🔴 Hard"]],()=>lvl,k=>{lvl=k;if(gsel>=0)run()});
 chips($("gtabs"),GN.map((n,i)=>[i,n]),()=>gsel,k=>{gsel=k;run()});
 chips($("gt"),[[0,"🌍 Mixed"],[1,"🇵🇭 Filipino"],[2,"🔬 Science"],[3,"🍜 Food & music"]],()=>topic,k=>{topic=k;if(gsel===4)run()});
@@ -272,7 +280,7 @@ function mem(){
   G.innerHTML='<div class="info"><span id="mm">Moves: 0</span><span id="mb"></span></div><div class="grid" id="mg"></div>';
   if(bestMoves[lvl])$("mb").textContent="Best: "+bestMoves[lvl];
   function win(){
-    confetti();if(!bestMoves[lvl]||moves<bestMoves[lvl])bestMoves[lvl]=moves;S.best.mem=bestMoves;award([20,30,50][lvl]);
+    confetti();if(!bestMoves[lvl]||moves<bestMoves[lvl])bestMoves[lvl]=moves;S.best.mem=bestMoves;award([20,30,50][lvl],"memory");
     G.insertAdjacentHTML("beforeend",'<p style="margin-top:14px"><b>You did it in '+moves+' moves! 🎉</b></p><button class="pill main" id="again">Play again</button>');
     $("again").onclick=mem;addChallenge("Memory match","a win in "+moves+" moves");
   }
@@ -308,7 +316,7 @@ function pat(){
   function tap(i){
     if(!play)return;
     flash(i);
-    if(i!==seq[step]){play=false;const r=seq.length-1;S.best.pat=S.best.pat||[0,0,0];S.best.pat[lvl]=Math.max(S.best.pat[lvl]||0,r);award(Math.max(0,r)*[2,3,5][lvl]);if(r>0)addChallenge("Pattern recall","round "+r);$("pm").textContent="Missed! You reached round "+r+" (best "+S.best.pat[lvl]+") 💪";$("ps").disabled=false;$("ps").textContent="Try again";return}
+    if(i!==seq[step]){play=false;const r=seq.length-1;S.best.pat=S.best.pat||[0,0,0];S.best.pat[lvl]=Math.max(S.best.pat[lvl]||0,r);award(Math.max(0,r)*[2,3,5][lvl],"focus");if(r>0)addChallenge("Pattern recall","round "+r);$("pm").textContent="Missed! You reached round "+r+" (best "+S.best.pat[lvl]+") 💪";$("ps").disabled=false;$("ps").textContent="Try again";return}
     if(++step===seq.length){play=false;$("pm").textContent="Nice! ✨";setTimeout(round,700)}
   }
   $("ps").onclick=()=>{seq=Array.from({length:[0,0,2][lvl]},()=>Math.floor(Math.random()*4));$("ps").disabled=true;round()};
@@ -332,7 +340,7 @@ function wrd(){
   function next(){
     if(i>=W.length){
       G.innerHTML='<p><b>All done! Score: '+sc+' of '+W.length+' 🎉</b></p><button class="pill main" id="again">Play again</button>';
-      if(sc>W.length/2)confetti();award(sc*[10,15,25][lvl]);addChallenge("Word scramble",sc+" of "+W.length);
+      if(sc>W.length/2)confetti();award(sc*[10,15,25][lvl],"words");addChallenge("Word scramble",sc+" of "+W.length);
       $("again").onclick=wrd;return;
     }
     $("wz").textContent=scr(W[i][0]).toUpperCase();$("wh").textContent="Hint: "+W[i][1];
@@ -351,7 +359,7 @@ function wrd(){
 }
 
 function mth(){
-  let sc=0,t=30,q=null;
+  let sc=0,t=30,q=null,lives=3,cmb=0;
   const R=n=>Math.floor(Math.random()*n);
   function gen(){
     const a=R(9)+3,b=R(9)+3,c=R(8)+2;
@@ -366,12 +374,12 @@ function mth(){
   const iv=setInterval(()=>{
     if(!mt.isConnected){clearInterval(iv);return}
     mt.textContent="⏱ "+(--t);
-    if(t<=0){clearInterval(iv);G.innerHTML='<p><b>Time is up! Score: '+sc+' 🎉</b></p><button class="pill main" id="again">Play again</button>';if(sc>=8)confetti();award(sc*[3,5,8][lvl]);addChallenge("Quick math",sc+" correct answers");$("again").onclick=mth}
+    if(t<=0){clearInterval(iv);G.innerHTML='<p><b>Time is up! Score: '+sc+' 🎉</b></p><button class="pill main" id="again">Play again</button>';if(sc>=8)confetti();award(sc*[3,5,8][lvl],"math");addChallenge("Quick math",sc+" correct answers");$("again").onclick=mth}
   },1000);
   mi.onkeydown=e=>{
     if(e.key!=="Enter"||mi.value.trim()==="")return;
-    if(+mi.value===q[1]){sc++;$("ms").textContent="Score: "+sc;$("mm2").textContent="";ask()}
-    else{$("mm2").textContent="Try again 🤔";mi.select()}
+    if(+mi.value===q[1]){sc++;cmb++;if(cmb%5===0)t+=3;$("ms").textContent="Score: "+sc;$("mm2").textContent="";ask()}
+    else{cmb=0;if(lvl>0&&--lives<=0)t=1;$("mm2").textContent="Try again 🤔"+(lvl>0?" ❤️ "+Math.max(lives,0):"");mi.select()}
   };
   ask();
 }
@@ -401,6 +409,77 @@ const TP=[[
 ["What is the main ingredient of hummus?","Chickpeas",["Lentils","Black beans","Potatoes"],1],["Which spice comes from the crocus flower?","Saffron",["Turmeric","Cinnamon","Paprika"],1],["Which Korean dish is made of fermented cabbage?","Kimchi",["Bibimbap","Bulgogi","Tteokbokki"],1],["Which group sang Dancing Queen?","ABBA",["Queen","Bee Gees","Boney M."],1],["How many keys does a standard piano have?","88",["76","92","100"],1],["Which country is the home of the tango?","Argentina",["Spain","Brazil","Mexico"],1],
 ["Which Italian city is known for balsamic vinegar?","Modena",["Naples","Florence","Bologna"],2],["What is traditional miso made from?","Fermented soybeans",["Rice flour","Seaweed","Fish"],2],["Who composed The Four Seasons?","Antonio Vivaldi",["Johann Sebastian Bach","Wolfgang Amadeus Mozart","Ludwig van Beethoven"],2],["How many beats does a whole note last in 4/4 time?","4",["2","3","8"],2],["Which Italian dessert's name means pick me up?","Tiramisu",["Panna cotta","Cannoli","Gelato"],2],["Which French cooking term means everything in its place?","Mise en place",["Sous vide","Au gratin","Bain-marie"],2]
 ]];
+const SK={memory:"🧩 Memory",focus:"🎯 Focus",words:"🔤 Words",math:"➕ Math",knowledge:"🧠 Knowledge",logic:"🕵️ Logic"};
+function brain(){
+  const box=$("brainBox"),sk=S.skill||{},ent=Object.entries(SK);
+  if(!ent.some(([k])=>sk[k]>0)){box.innerHTML="<p>Play a few games to see your strengths here.</p>";return}
+  const max=Math.max(100,...ent.map(([k])=>sk[k]||0));
+  const hi=ent.reduce((a,b)=>(sk[b[0]]||0)>(sk[a[0]]||0)?b:a),lo=ent.reduce((a,b)=>(sk[b[0]]||0)<(sk[a[0]]||0)?b:a);
+  box.innerHTML=ent.map(([k,n])=>'<div class="sk"><span>'+n+'</span><div class="bar"><i style="width:'+Math.round((sk[k]||0)/max*100)+'%"></i></div><b>'+(sk[k]||0)+'</b></div>').join("")+'<p style="margin-top:14px"><b>Strongest: '+hi[1]+'.</b> Train '+lo[1]+' next to balance your brain.</p>';
+}
+const DW=["tiger","plant","music","bread","cloud","dream","beach","smile","river","house","lemon","honey","storm","train","zebra","candy","pearl","tulip","water","happy","brave","light","night","ocean","green","stone","wheel","queen","magic","grape","chair","clock","dance","earth","fruit","heart","juice","knife","laugh","money","paper","radio","sheep","table","uncle","voice","whale","young","angel","bloom","crown","drink","eagle","flame","ghost","hotel","plane"];
+function daily(){
+  const d=new Date(),n=Math.floor(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/864e5),w=DW[n%DW.length];
+  if(!S.daily||S.daily.n!==n)S.daily={n,g:[]};
+  const D=S.daily,CL={"🟩":"#2e9e4f","🟨":"#c9a227","⬛":"#555"};
+  const sc=g=>{const r=Array(5).fill("⬛"),u=[...w];[...g].forEach((c,i)=>{if(c===w[i]){r[i]="🟩";u[i]=null}});[...g].forEach((c,i)=>{if(r[i]==="⬛"){const j=u.indexOf(c);if(j>-1){r[i]="🟨";u[j]=null}}});return r};
+  function draw(){
+    const won=D.g.includes(w),over=won||D.g.length>=6;
+    let h='<p><b>📅 Daily word</b>: guess the 5-letter word in 6 tries. Same word for everyone today!</p>';
+    h+=D.g.map(g=>{const r=sc(g);return '<div style="text-align:center">'+[...g].map((c,i)=>'<span style="display:inline-block;width:2.4rem;padding:4px 0;margin:2px;border-radius:8px;font-weight:700;color:#fff;background:'+CL[r[i]]+'">'+c.toUpperCase()+'</span>').join("")+'</div>'}).join("");
+    h+=over?'<p style="margin-top:12px"><b>'+(won?"Solved in "+D.g.length+"! 🎉":"The word was "+w.toUpperCase()+".")+' Come back tomorrow!</b></p><button class="pill main" id="ds">📤 Share result</button>':'<input class="inp" id="dw" maxlength="5" autocomplete="off" autocapitalize="off" aria-label="Your guess" style="margin-top:12px"><p id="dm" style="text-align:center;min-height:1.4em"></p><button class="pill main" id="dg">Guess ('+(6-D.g.length)+' left)</button>';
+    G.innerHTML=h;
+    if(over)$("ds").onclick=async()=>{
+      const x={text:"Bored Buster Daily "+(won?D.g.length:"X")+"/6\n"+D.g.map(g=>sc(g).join("")).join("\n")+"\nCan you beat me?",url:location.href.split("#")[0]};
+      try{if(navigator.share){await navigator.share(x);return}await navigator.clipboard.writeText(x.text+" "+x.url);$("ds").textContent="✅ Copied!"}catch(e){}
+    };else{$("dg").onclick=go;$("dw").onkeydown=e=>{if(e.key==="Enter")go()}}
+  }
+  function go(){
+    const v=$("dw").value.trim().toLowerCase();
+    if(!/^[a-z]{5}$/.test(v)){$("dm").textContent="Type a 5-letter word.";return}
+    D.g.push(v);save();
+    if(v===w){confetti();award((7-D.g.length)*10,"words")}else if(D.g.length>=6)award(5,"words");
+    draw();
+  }
+  draw();
+}
+const CASES=[
+{t:"The Missing Cake",i:"Someone ate the office birthday cake at 12:30. Suspects: Ana, Ben and Carla.",s:[["The cake had walnuts and Ana is allergic to nuts. Does that help clear her?",["Yes, she would avoid it","No, it proves nothing"],0,"Ana avoids nuts"],["Crumbs were on a keyboard used only by Ben and Carla. Ben was in a meeting from 12:00 to 13:00. Who could have used it at 12:30?",["Ben","Carla","Both"],1,"only Carla was free"],["Carla says she never left her desk, but the door log shows her in the kitchen at 12:25. What does this show?",["She lied","She was careful","Nothing"],0,"Carla lied"]],f:["Who ate the cake?",["Ana","Ben","Carla"],2]},
+{t:"The Safe Code",i:"A safe opens with three numbers. Each clue is a number pattern, and the code is the three answers in order.",s:[["Clue 1: 2, 4, 8, 16, ?",["24","32","30"],1,"32"],["Clue 2: 1, 1, 2, 3, 5, ?",["7","8","9"],1,"8"],["Clue 3: 3, 6, 12, 24, ?",["36","42","48"],2,"48"]],f:["What is the code?",["32-8-48","8-32-48","32-48-8"],0]},
+{t:"The Alibi",i:"A shop was robbed at 6:45 pm. Dara says she was at the gym from 6:00 to 7:00 pm.",s:[["The gym closes at 6:30 pm. Does her alibi hold for 6:45?",["Yes, fully","No, not by itself"],1,"the gym was closed at 6:45"],["A witness saw a thief in a red coat. Dara owns a red coat and a blue one. What does this tell us?",["She is guilty","It is possible but not proven","She is innocent"],1,"she owns a red coat"],["Her phone stayed at the gym until 6:50 pm, and the shop is 25 minutes away. What now?",["Her phone proves she was there","Her phone may not mean she was there","She is definitely guilty"],1,"the phone could have been left behind"]],f:["Can we say Dara is the thief?",["Yes","No, there is not enough proof"],1]}
+];
+function mys(){
+  const my=gtoken;
+  G.innerHTML='<p><b>🕵️ Mystery cases</b>: think like a detective. Wrong answers cost a life ❤️.</p><div id="cl"></div>';
+  CASES.forEach((c,k)=>{const b=document.createElement("button");b.className="pill opt";b.textContent=((S.cases||[])[k]?"✅ ":"🔎 ")+c.t;b.onclick=()=>play(k);$("cl").appendChild(b)});
+  function play(k){
+    const c=CASES[k],steps=c.s.concat([[c.f[0],c.f[1],c.f[2],""]]);
+    let i=0,lives=3;const clues=[];
+    function show(){
+      if(my!==gtoken)return;
+      G.innerHTML='<div class="info"><span>'+c.t+'</span><span>'+"❤️".repeat(lives)+'</span></div><p class="iq" style="font-style:italic"></p>'+(clues.length?'<p><b>Clues:</b> '+clues.join(" · ")+'</p>':'')+'<p class="q" style="font-weight:700;font-size:1.1rem"></p><div id="to"></div><p id="mz" style="min-height:1.4em"></p>';
+      G.querySelector(".iq").textContent=c.i;G.querySelector(".q").textContent=steps[i][0];
+      steps[i][1].forEach((o,j)=>{
+        const b=document.createElement("button");b.className="pill opt";b.textContent=o;
+        b.onclick=()=>{
+          if(j===steps[i][2]){
+            if(i===steps.length-1){
+              S.cases=S.cases||[];S.cases[k]=true;confetti();award(50,"logic");
+              G.innerHTML='<p><b>Case solved! 🎉</b></p><p>"'+c.t+'" is closed. +50 points</p><button class="pill main" id="bk">More cases</button>';$("bk").onclick=mys;return;
+            }
+            clues.push(steps[i][3]);i++;show();
+          }else{
+            lives--;b.disabled=true;
+            if(lives<=0){G.innerHTML='<p><b>Out of lives 😕</b></p><p>The case went cold. Try again!</p><button class="pill main" id="bk">Back to cases</button>';$("bk").onclick=mys}
+            else{$("mz").textContent="Not quite. Think again. Lives left: "+lives}
+          }
+        };
+        $("to").appendChild(b);
+      });
+    }
+    show();
+  }
+}
 const seenQ=new Set();
 const TX=[[["How many days are in a leap year?","366",["365","364","367"]],["Which animal is known as the king of the jungle?","Lion",["Tiger","Elephant","Gorilla"]],["What color do you get when you mix blue and yellow?","Green",["Orange","Purple","Brown"]],["How many sides does a triangle have?","3",["4","5","6"]],["Which planet do we live on?","Earth",["Mars","Venus","Saturn"]],["What is the tallest animal in the world?","Giraffe",["Elephant","Horse","Camel"]],["Which season comes after winter?","Spring",["Summer","Autumn","Monsoon"]],["Which gas do humans need to breathe to live?","Oxygen",["Nitrogen","Helium","Carbon dioxide"]],["In which country is the Eiffel Tower?","France",["Italy","Spain","Germany"]],["What is the capital of South Korea?","Seoul",["Busan","Tokyo","Incheon"]],["How many colors are in a rainbow?","7",["5","6","8"]],["Which language is mostly spoken in Brazil?","Portuguese",["Spanish","English","French"]],["What is the largest planet in our solar system?","Jupiter",["Saturn","Neptune","Earth"]]],
 [["What is the smallest country in the world?","Vatican City",["Monaco","Malta","San Marino"]],["What is the hardest natural substance?","Diamond",["Gold","Quartz","Iron"]],["Who wrote Romeo and Juliet?","William Shakespeare",["Charles Dickens","Jane Austen","Mark Twain"]],["Which blood cells fight infection?","White blood cells",["Red blood cells","Platelets","Plasma"]],["What is the currency of Japan?","Yen",["Won","Yuan","Ringgit"]],["What is the largest hot desert in the world?","Sahara",["Gobi","Kalahari","Arabian"]],["Which planet is famous for its rings?","Saturn",["Jupiter","Uranus","Mars"]],["What does DNA stand for?","Deoxyribonucleic acid",["Dioxyribonucleic acid","Deoxyribose nucleic anhydride","Double nitrogen acid"]],["Which country gave the Statue of Liberty to the USA?","France",["England","Spain","Italy"]],["Who was the first person to walk on the Moon?","Neil Armstrong",["Buzz Aldrin","Yuri Gagarin","John Glenn"]],["What is the capital of Canada?","Ottawa",["Toronto","Vancouver","Montreal"]],["Which ocean lies between Africa and Australia?","Indian",["Atlantic","Pacific","Arctic"]],["Who wrote the novel Noli Me Tangere?","José Rizal",["Francisco Balagtas","Andres Bonifacio","Apolinario Mabini"]],["Which is the longest river in Africa?","Nile",["Congo","Niger","Zambezi"]]],
@@ -413,19 +492,19 @@ function tri(){
   let fresh=pool.filter(q=>!seenQ.has(q[0]));
   if(fresh.length<5){seenQ.clear();fresh=pool}
   const Q=fresh.slice().sort(()=>Math.random()-.5).slice(0,5),my=gtoken;
-  Q.forEach(q=>seenQ.add(q[0]));
+  Q.forEach(q=>seenQ.add(q[0]));let lives=3,cmb=0,bonus=0;
   let i=0,sc=0;
   function next(){
     if(my!==gtoken)return;
-    if(i>=Q.length){G.innerHTML='<p><b>Score: '+sc+' of '+Q.length+' 🎉</b></p><button class="pill main" id="again">Play again</button>';if(sc>=Math.ceil(Q.length*.8))confetti();award(sc*[10,15,25][lvl]);addChallenge("Trivia",sc+" of "+Q.length);$("again").onclick=tri;return}
+    if(i>=Q.length){G.innerHTML='<p><b>Score: '+sc+' of '+Q.length+' 🎉</b></p><button class="pill main" id="again">Play again</button>';if(sc>=Math.ceil(Q.length*.8))confetti();award(sc*[10,15,25][lvl]+bonus,"knowledge");addChallenge("Trivia",sc+" of "+Q.length);$("again").onclick=tri;return}
     const [q,ok,bad]=Q[i];
-    G.innerHTML='<div class="info"><span>Question '+(i+1)+' of '+Q.length+'</span><span>Score: '+sc+'</span></div><p style="font-weight:700;font-size:1.15rem"></p><div id="to"></div>';
+    G.innerHTML='<div class="info"><span>Question '+(i+1)+' of '+Q.length+'</span><span>'+(lvl>0?"❤️".repeat(Math.max(lives,0))+" ":"")+'🔥'+cmb+' · Score: '+sc+'</span></div><p style="font-weight:700;font-size:1.15rem"></p><div id="to"></div>';
     G.querySelector("p").textContent=q;
     [ok,...bad].sort(()=>Math.random()-.5).forEach(o=>{
       const b=document.createElement("button");b.className="pill opt";b.textContent=o;
       b.onclick=()=>{
         document.querySelectorAll("#to .opt").forEach(x=>{x.disabled=true;if(x.textContent===ok)x.classList.add("good")});
-        if(o===ok)sc++;else b.classList.add("bad");
+        if(o===ok){sc++;cmb++;bonus+=cmb>1?(cmb-1)*[2,3,5][lvl]:0}else{b.classList.add("bad");cmb=0;lives--;if(lvl>0&&lives<=0)i=Q.length}
         i++;setTimeout(next,1100);
       };
       $("to").appendChild(b);
@@ -450,9 +529,10 @@ function track(p){
 function route(){
   const g=location.hash==="#games";
   track(g?"/brain-games":"/home");
-  $("home").hidden=g;$("gamesView").hidden=!g;
-  $("tabH").setAttribute("aria-current",g?"false":"page");$("tabG").setAttribute("aria-current",g?"page":"false");
-  stat();renderSaved();
+  const b=location.hash==="#brain";
+  $("home").hidden=g||b;$("gamesView").hidden=!g;$("brainView").hidden=!b;
+  [["tabH",!g&&!b],["tabG",g],["tabB",b]].forEach(([id,on])=>$(id).setAttribute("aria-current",on?"page":"false"));
+  stat();renderSaved();if(b)brain();
   if(!g&&gsel>=0){gtoken++;gsel=-1;G.innerHTML="<p>Pick a game above to start playing.</p>";$("gt").hidden=true;$("gtabs").querySelectorAll(".chip").forEach(c=>c.setAttribute("aria-pressed","false"))}
   window.scrollTo(0,0);
 }
