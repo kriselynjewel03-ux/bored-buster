@@ -444,38 +444,69 @@ function daily(){
   draw();
 }
 const CASES=[
-{t:"The Missing Cake",i:"Someone ate the office birthday cake at 12:30. Suspects: Ana, Ben and Carla.",s:[["The cake had walnuts and Ana is allergic to nuts. Does that help clear her?",["Yes, she would avoid it","No, it proves nothing"],0,"Ana avoids nuts"],["Crumbs were on a keyboard used only by Ben and Carla. Ben was in a meeting from 12:00 to 13:00. Who could have used it at 12:30?",["Ben","Carla","Both"],1,"only Carla was free"],["Carla says she never left her desk, but the door log shows her in the kitchen at 12:25. What does this show?",["She lied","She was careful","Nothing"],0,"Carla lied"]],f:["Who ate the cake?",["Ana","Ben","Carla"],2]},
-{t:"The Safe Code",i:"A safe opens with three numbers. Each clue is a number pattern, and the code is the three answers in order.",s:[["Clue 1: 2, 4, 8, 16, ?",["24","32","30"],1,"32"],["Clue 2: 1, 1, 2, 3, 5, ?",["7","8","9"],1,"8"],["Clue 3: 3, 6, 12, 24, ?",["36","42","48"],2,"48"]],f:["What is the code?",["32-8-48","8-32-48","32-48-8"],0]},
-{t:"The Alibi",i:"A shop was robbed at 6:45 pm. Dara says she was at the gym from 6:00 to 7:00 pm.",s:[["The gym closes at 6:30 pm. Does her alibi hold for 6:45?",["Yes, fully","No, not by itself"],1,"the gym was closed at 6:45"],["A witness saw a thief in a red coat. Dara owns a red coat and a blue one. What does this tell us?",["She is guilty","It is possible but not proven","She is innocent"],1,"she owns a red coat"],["Her phone stayed at the gym until 6:50 pm, and the shop is 25 minutes away. What now?",["Her phone proves she was there","Her phone may not mean she was there","She is definitely guilty"],1,"the phone could have been left behind"]],f:["Can we say Dara is the thief?",["Yes","No, there is not enough proof"],1]}
+{t:"The Missing Cake",i:"Someone ate the office birthday cake at 12:30. Suspects: Ana, Ben, Carla and Dev.",s:[
+["Dev was on a recorded video call from 12:15 to 12:45. Ana's badge shows she left the building at 12:20 and came back at 12:50. Who is cleared?",["Ana and Dev","Ben and Carla","Only Dev","Only Ana"],0,"Ana and Dev are cleared"],
+["Crumbs were on a keyboard only Ben and Carla use. Ben says he was in a meeting from 12:00 to 13:00, but that meeting was cancelled. What follows?",["Ben was there anyway","Ben has no alibi","Carla is cleared","Ben is guilty for sure"],1,"Ben has no alibi"],
+["Carla's badge shows she was in the printer room from 12:25 to 12:35. It is 30 seconds from the kitchen. What does this show?",["She was far away","She was close enough to do it","She is cleared","She is guilty for sure"],1,"Carla was close by"],
+["A camera at 12:30 shows a green jacket. Ben's green jacket has been at the dry cleaner since Monday (the receipt confirms it). Carla owns a green jacket too. Who does the evidence point to?",["Ben","Carla","Ana","Dev"],1,"Ben's jacket was elsewhere"]],
+f:["Who ate the cake?",["Ana","Ben","Carla","Dev"],2]},
+{t:"The Safe Code",i:"A safe opens with four numbers. Each clue is a number pattern, and the code is the four answers in order.",s:[
+["Clue 1: 2, 6, 12, 20, 30, ?",["40","42","44","36"],1,"42"],
+["Clue 2: 1, 4, 9, 16, 25, ?",["30","32","36","49"],2,"36"],
+["Clue 3: 3, 5, 9, 17, 33, ?",["49","57","65","66"],2,"65"],
+["Clue 4: 2, 3, 5, 7, 11, 13, ?",["15","17","19","21"],1,"17"]],
+f:["Which is the code?",["42-36-65-17","42-36-17-65","36-42-65-17","42-65-36-17"],0]},
+{t:"The Gallery Theft",i:"A painting vanished between 8:00 and 8:20 pm. The guests were Eli, Fay, Gus and Hana.",s:[
+["Eli was filmed at the bar from 7:55 to 8:25. Fay was in the cloakroom from 8:00 to 8:10 and in the garden from 8:15 to 8:25 (staff confirm both). What can we say?",["Eli is cleared; Fay has a 5-minute gap","Both are cleared","Neither is cleared","Fay is cleared; Eli is not"],0,"Fay has a gap from 8:10 to 8:15"],
+["The frame was taken down with a ladder from the garden shed. The shed was locked until 8:05, when Gus's key card opened it. What does this suggest?",["Gus is certainly guilty","Gus's card was used, which needs checking","Gus is cleared","Hana opened the shed"],1,"Gus's card opened the shed"],
+["Gus lost his card at 7:45 and reported it to staff at 7:50 (staff confirm). What does this suggest?",["Gus is guilty","Someone else used his card","The staff lied","The card was never used"],1,"someone else used the card"],
+["Hana was seen picking something up near the bar at 7:48, and a camera shows her entering the garden at 8:03. Who most likely used the card?",["Eli","Fay","Gus","Hana"],3,"Hana was near the shed at 8:03"]],
+f:["Who stole the painting?",["Eli","Fay","Gus","Hana"],3]},
+{t:"The Fruit Stall Riddle",i:"Three boxes are labeled Apples, Oranges and Mixed. Every label is wrong. You may pull out one fruit from one box.",s:[
+["Which box should you pick from?",["The one labeled Apples","The one labeled Oranges","The one labeled Mixed","Any box is the same"],2,"open the Mixed box"],
+["You pull an apple from the box labeled Mixed. What does that box really hold?",["Apples","Oranges","Mixed","We cannot tell"],0,"the Mixed box holds apples"],
+["The box labeled Oranges cannot hold oranges, and apples are taken. What does it hold?",["Mixed","Apples","Oranges","Nothing"],0,"the Oranges box is mixed"],
+["So what does the box labeled Apples hold?",["Oranges","Mixed","Apples","We cannot tell"],0,"the Apples box holds oranges"]],
+f:["How many fruits did you need to check to fix all the labels?",["1","2","3","6"],0]}
 ];
 function mys(){
-  const my=gtoken;
-  G.innerHTML='<p><b>🕵️ Mystery cases</b>: think like a detective. Wrong answers cost a life ❤️.</p><div id="cl"></div>';
-  CASES.forEach((c,k)=>{const b=document.createElement("button");b.className="pill opt";b.textContent=((S.cases||[])[k]?"✅ ":"🔎 ")+c.t;b.onclick=()=>play(k);$("cl").appendChild(b)});
+  const my=gtoken,solved=S.cases||[];
+  G.innerHTML='<p><b>🕵️ Mystery cases</b> ('+solved.filter(Boolean).length+'/'+CASES.length+' solved)</p><p>You get '+[4,3,2][lvl]+' lives on this level. A 💡 hint removes one wrong option but costs a life.</p><div id="cl"></div>';
+  CASES.forEach((c,k)=>{const b=document.createElement("button");b.className="pill opt";b.textContent=(solved[k]?"✅ ":"🔎 ")+c.t;b.onclick=()=>play(k);$("cl").appendChild(b)});
   function play(k){
     const c=CASES[k],steps=c.s.concat([[c.f[0],c.f[1],c.f[2],""]]);
-    let i=0,lives=3;const clues=[];
+    let i=0,lives=[4,3,2][lvl],ord=null,gone=[],msg="";const clues=[];
+    function fail(){G.innerHTML='<p><b>Out of lives 😕</b></p><p>The case went cold. Try again!</p><button class="pill main" id="bk">Back to cases</button>';$("bk").onclick=mys}
     function show(){
       if(my!==gtoken)return;
-      G.innerHTML='<div class="info"><span>'+c.t+'</span><span>'+"❤️".repeat(lives)+'</span></div><p class="iq" style="font-style:italic"></p>'+(clues.length?'<p><b>Clues:</b> '+clues.join(" · ")+'</p>':'')+'<p class="q" style="font-weight:700;font-size:1.1rem"></p><div id="to"></div><p id="mz" style="min-height:1.4em"></p>';
-      G.querySelector(".iq").textContent=c.i;G.querySelector(".q").textContent=steps[i][0];
-      steps[i][1].forEach((o,j)=>{
-        const b=document.createElement("button");b.className="pill opt";b.textContent=o;
+      const [q,o,a]=steps[i];
+      if(!ord)ord=o.map((t,j)=>[t,j===a]).sort(()=>Math.random()-.5);
+      const left=ord.filter(([t])=>!gone.includes(t));
+      G.innerHTML='<div class="info"><span>'+c.t+' · '+(i+1)+'/'+steps.length+'</span><span>'+"❤️".repeat(lives)+'</span></div><p class="iq" style="font-style:italic"></p>'+(clues.length?'<p><b>Clues:</b> '+clues.join(" · ")+'</p>':'')+'<p class="q" style="font-weight:700;font-size:1.1rem"></p><div id="to"></div><p id="mz" style="min-height:1.4em"></p>';
+      G.querySelector(".iq").textContent=c.i;G.querySelector(".q").textContent=q;$("mz").textContent=msg;
+      left.forEach(([t,ok])=>{
+        const b=document.createElement("button");b.className="pill opt";b.textContent=t;
         b.onclick=()=>{
-          if(j===steps[i][2]){
+          if(ok){
             if(i===steps.length-1){
-              S.cases=S.cases||[];S.cases[k]=true;confetti();award(50,"logic");
-              G.innerHTML='<p><b>Case solved! 🎉</b></p><p>"'+c.t+'" is closed. +50 points</p><button class="pill main" id="bk">More cases</button>';$("bk").onclick=mys;return;
+              S.cases=S.cases||[];S.cases[k]=true;confetti();award(30+lives*10,"logic");
+              G.innerHTML='<p><b>Case solved! 🎉</b></p><p>"'+c.t+'" is closed. +'+(30+lives*10)+' points</p><button class="pill main" id="bk">More cases</button>';$("bk").onclick=mys;return;
             }
-            clues.push(steps[i][3]);i++;show();
+            clues.push(steps[i][3]);i++;ord=null;gone=[];msg="";show();
           }else{
-            lives--;b.disabled=true;
-            if(lives<=0){G.innerHTML='<p><b>Out of lives 😕</b></p><p>The case went cold. Try again!</p><button class="pill main" id="bk">Back to cases</button>';$("bk").onclick=mys}
-            else{$("mz").textContent="Not quite. Think again. Lives left: "+lives}
+            lives--;gone.push(t);
+            if(lives<=0){fail();return}
+            msg="Not quite. That option is out. Think again.";show();
           }
         };
         $("to").appendChild(b);
       });
+      const wr=ord.filter(([t,ok])=>!ok&&!gone.includes(t));
+      if(lives>1&&wr.length>1){
+        const h=document.createElement("button");h.className="pill";h.textContent="💡 Hint (−1 life)";
+        h.onclick=()=>{gone.push(wr[Math.floor(Math.random()*wr.length)][0]);lives--;msg="Hint used: one wrong option removed.";show()};
+        G.appendChild(h);
+      }
     }
     show();
   }
