@@ -87,13 +87,20 @@ h2{font-size:1rem;margin:0 0 8px}
 .gfull{position:fixed;inset:0;z-index:25;overflow-y:auto;background:linear-gradient(160deg,var(--g1),var(--g2))}
 .gbar{position:sticky;top:0;z-index:2;display:flex;align-items:center;gap:12px;padding:calc(10px + env(safe-area-inset-top,0px)) 16px 10px;background:rgba(0,0,0,.28);backdrop-filter:blur(8px);color:#fff}
 .gbar b{font-size:1.05rem}
-#gexit{background:#fff;color:#2a1a8a;border-color:#fff}
+#gexit,#padX{background:#fff;color:#2a1a8a;border-color:#fff}
+#pad{z-index:36}
+#padC{width:100%;height:52vh;background:#fff;border-radius:16px;touch-action:none;display:block;box-shadow:0 6px 0 rgba(0,0,0,.25)}
+.tools{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0;align-items:center}
+.sw{width:34px;height:34px;border-radius:50%;border:3px solid #fff;cursor:pointer;padding:0}
+.sw[aria-pressed="true"]{outline:3px solid #ffd23f;outline-offset:2px}
 .gwrap{max-width:520px;margin:0 auto;padding:16px 16px calc(36px + env(safe-area-inset-bottom,0px))}
 .gwrap .arena{min-height:calc(100vh - 190px)}
 #gtabs{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 #gtabs .chip{padding:24px 10px;font-size:1rem;border-radius:20px;text-align:center}
 .camwrap{position:fixed;inset:0;z-index:35;background:rgba(10,5,40,.75);display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto}
 #camV{width:100%;max-height:48vh;border-radius:16px;background:#000;object-fit:cover;margin:8px 0}
+.pz{display:grid;gap:3px;width:100%;margin:10px 0;border-radius:14px;overflow:hidden}
+.pzt{border:0;padding:0;min-height:0;color:#fff;font:700 1.2rem "Trebuchet MS",system-ui,sans-serif;text-shadow:0 1px 3px #000;cursor:pointer;background-image:var(--img)}
 @keyframes bounce{50%{transform:translateY(-10px) scale(1.1)}}
 @media (prefers-reduced-motion:reduce){.popwrap,.popcard,.popemoji{animation:none}}
 .gobtn{display:block;text-align:center;text-decoration:none;background:#fff;color:#2a1a8a;font:700 1.25rem Georgia,serif;border-radius:24px;padding:22px 16px;margin-top:26px;box-shadow:0 8px 0 rgba(0,0,0,.28)}
@@ -128,7 +135,8 @@ h2{font-size:1rem;margin:0 0 8px}
 <p class="stat" id="stat"></p>
 <div id="saved"></div>
 <a class="gobtn" href="#games">🎮 Play brain games<small>5 games, 3 levels: easy, medium, hard</small></a>
-<button class="chip" id="share" style="display:block;margin:20px auto 0">📤 Share with a friend</button>
+<button class="chip" id="padBtn" style="display:block;margin:20px auto 0">✏️ Free drawing pad</button>
+<button class="chip" id="share" style="display:block;margin:12px auto 0">📤 Share with a friend</button>
 <p style="text-align:center;font-size:.85rem;opacity:.85;margin-top:24px">Visits are counted anonymously. No names or personal details are collected, except answers that people aged 16 and over choose to send.</p>
 <button class="chip" id="ageBtn" style="display:block;margin:12px auto 0">🎂 Age</button>
 <button class="chip" id="camBtn" style="display:block;margin:10px auto 0">📸 Camera</button>
@@ -163,6 +171,14 @@ h2{font-size:1rem;margin:0 0 8px}
 <h2 id="popT"></h2>
 <div class="acts"><button class="pill main" id="popGo">Let’s do it! 🎉</button><button class="pill" id="popNext">Another 🎲</button></div>
 <p class="popcat" id="popN"></p>
+</div>
+</div>
+<div class="gfull" id="pad" hidden>
+<div class="gbar"><button class="pill" id="padX">✕ Close</button><b id="padT" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></b></div>
+<div class="gwrap">
+<canvas id="padC" aria-label="Drawing area"></canvas>
+<div class="tools" id="padTools"></div>
+<p id="padMsg" role="status" style="min-height:1.4em"></p>
 </div>
 </div>
 <div class="camwrap" id="cam" hidden>
@@ -249,7 +265,37 @@ const A=[
 ["Learn a magic trick or a new card game from a video.","b",15,"Learn"],
 ["Call a friend and play 20 questions.","b",15,"Connect"],
 ["Take a 30-minute photo walk and capture 10 interesting things.","b",30,"Creative"],
-["Plan a small surprise for someone: a message, a meal or a tiny gift.","b",30,"Connect"]
+["Plan a small surprise for someone: a message, a meal or a tiny gift.","b",30,"Connect"],
+["Make a quick list of 5 people who make your life better.","sl",5,"Reflect"],
+["Look at a photo that makes you happy and remember that day.","s",5,"Reflect"],
+["Stretch your arms overhead, then slowly roll your shoulders 10 times.","ta",5,"Move"],
+["Hum or sing a slow song you know.","ta",5,"Music"],
+["Sit still and count 20 slow breaths.","ta",5,"Mindful"],
+["Send a voice message to someone you miss.","l",5,"Connect"],
+["Write a thank-you message to someone and send it.","ls",5,"Connect"],
+["Share one good memory with a friend in a message.","l",5,"Connect"],
+["Find one surprising fact about the ocean or space.","c",5,"Learn"],
+["Learn to say 5 words in a language you do not speak.","c",5,"Learn"],
+["Pick a food in your kitchen and look up where it comes from.","c",5,"Learn"],
+["Balance on one leg for 30 seconds on each side.","rb",5,"Move"],
+["Tell yourself a joke and try to make yourself laugh.","bs",5,"Relax"],
+["Rearrange 5 things on your desk or shelf to make it look better.","rb",5,"Reset"],
+["Close your eyes and picture your perfect weekend in detail.","t",5,"Imagine"],
+["Drink a glass of water slowly and stretch your legs.","tr",5,"Relax"],
+["Do 20 squats or 10 push-ups, then shake it out.","r",5,"Move"],
+["Write a postcard to yourself from a beach you would love to visit.","tb",5,"Creative"],
+["Make a smoothie or snack you have never tried before.","cb",15,"Creative"],
+["Write a short poem about your day.","sab",15,"Creative"],
+["Delete 20 photos you do not need from your phone.","rb",15,"Reset"],
+["Follow a guided meditation or breathing video.","ta",15,"Mindful"],
+["Call someone in your family and ask about their day.","ls",15,"Connect"],
+["Learn three new facts and write them down.","c",15,"Learn"],
+["Bake something and share it with a neighbor or friend.","sl",30,"Creative"],
+["Tidy one room with your favorite music playing.","rb",30,"Reset"],
+["Take a long, warm shower and rest afterwards.","ta",30,"Relax"],
+["Watch a tutorial and try a new craft or recipe.","cb",30,"Learn"],
+["Write a long message to a friend you have not talked to in a while.","ls",30,"Connect"],
+["Walk to a place near you that you have never visited.","rc",30,"Move"]
 ];
 const EMO={"Brain game":"🧠","Memory game":"🧩","Would you rather":"🤔","Creative":"🎨","Mindful":"🧘","Move":"💃","Relax":"🫖","Connect":"💬","Reflect":"📝","Learn":"💡","Reset":"🧹","Music":"🎵","Imagine":"✈️"};
 const CATS=Object.keys(EMO);
@@ -281,7 +327,9 @@ function chips(box,items,get,set){
 chips($("moods"),Object.entries(MOODS),()=>mood,k=>mood=k);
 chips($("times"),TIMES.map(t=>[t,"⏱ "+t+" min"]),()=>time,k=>time=k);
 function pick(){
-  const all=AL().map((a,i)=>({a,i})).filter(({a})=>a[1].includes(mood)&&a[2]<=time);
+  const L=AL();
+  let all=L.map((a,i)=>({a,i})).filter(({a})=>a[1].includes(mood)&&a[2]<=time);
+  if(all.length<6)all=all.concat(L.map((a,i)=>({a,i})).filter(({a})=>!a[1].includes(mood)&&a[2]<=time).sort(()=>Math.random()-.5).slice(0,6-all.length));
   if(!all.length)return null;
   let pool=all.filter(({i})=>!seen.has(i));
   if(!pool.length){all.forEach(({i})=>seen.delete(i));pool=all.filter(({i})=>i!==last);if(!pool.length)pool=all}
@@ -365,18 +413,18 @@ function openPop(a){
   curAct=a;p.hidden=false;$("popGo").focus();
 }
 function closePop(){$("pop").hidden=true}
-$("popGo").onclick=()=>{closePop();if(S.cam!==false&&curAct)openCam(curAct)};$("popX").onclick=closePop;
+$("popGo").onclick=()=>{closePop();if(curAct&&isPadAct(curAct))openPad(curAct);else if(S.cam!==false&&curAct)openCam(curAct)};$("popX").onclick=closePop;
 $("popNext").onclick=()=>{closePop();spin()};
 $("pop").onclick=e=>{if(e.target===$("pop"))closePop()};
 document.addEventListener("keydown",e=>{if(e.key==="Escape")closePop()});
 
-const G=$("arena"),GN=["🧩 Memory","🔴 Pattern","🔤 Words","➕ Quick math","🧠 Trivia","🎲 Surprise me","📅 Daily word","🕵️ Mystery","🔢 Number rush"];
+const G=$("arena"),GN=["🧩 Memory","🔴 Pattern","🔤 Words","➕ Quick math","🧠 Trivia","🎲 Surprise me","📅 Daily word","🕵️ Mystery","🔢 Number rush","🖼️ Picture puzzle"];
 let gsel=-1,lvl=1,gtoken=0,topic=0;const bestMoves=S.best.mem||[0,0,0];
-function run(){gtoken++;$("gt").hidden=gsel!==4||band()===0;const F=[mem,pat,wrd,mth,tri,0,daily,mys,rush];F[gsel===5?surp():gsel]()}
+function run(){gtoken++;$("gt").hidden=gsel!==4||band()===0;const F=[mem,pat,wrd,mth,tri,0,daily,mys,rush,puzzle];F[gsel===5?surp():gsel]()}
 const LVL=[[0,"🟢 Easy"],[1,"🟡 Medium"],[2,"🔴 Hard"]];
 function lvChips(){chips($("gl"),LVL.filter(([k])=>lvOK().includes(k)),()=>lvl,k=>{lvl=k;run()})}
 lvChips();
-const LD=[["6 pairs","8 pairs","12 pairs"],["Slow, starts at 1 step","Faster","Very fast, starts at 3 steps"],["Short words","Everyday words","Long words"],["Small sums","Times tables and bigger sums","Squares, division and percentages"],["General knowledge","School and world facts","Tough questions, 3 lives"],["A gentle random game","A balanced random game","A tough random game"],null,["4 lives","3 lives","2 lives"],["3×3 grid","4×4 grid","5×5 grid"]];
+const LD=[["6 pairs","8 pairs","12 pairs"],["Slow, starts at 1 step","Faster","Very fast, starts at 3 steps"],["Short words","Everyday words","Long words"],["Small sums","Times tables and bigger sums","Squares, division and percentages"],["General knowledge","School and world facts","Tough questions, 3 lives"],["A gentle random game","A balanced random game","A tough random game"],null,["4 lives","3 lives","2 lives"],["3×3 grid","4×4 grid","5×5 grid"],["3×3 slide puzzle","4×4 slide puzzle","5×5 slide puzzle"]];
 function pickLevel(){
   gtoken++;
   $("gl").hidden=true;$("gt").hidden=gsel!==4||band()===0;
@@ -709,7 +757,7 @@ $("share").onclick=async()=>{
   }catch(e){if(e.name!=="AbortError")$("share").textContent="Copy the link from your browser bar"}
 };
 function band(){return S.age&&S.age>=16?2:S.age&&S.age>=9?1:0}
-function gOK(){return band()===0?[0,1,3,4,5,8]:[0,1,2,3,4,5,6,7,8]}
+function gOK(){return band()===0?[0,1,3,4,5,8,9]:[0,1,2,3,4,5,6,7,8,9]}
 function lvOK(){return band()===1?[0,1]:[0,1,2]}
 function AL(){return band()===0?KA:A}
 function surp(){const l=gOK().filter(g=>g!==5&&g!==6);return l[Math.floor(Math.random()*l.length)]}
@@ -727,7 +775,23 @@ const KA=[
 ["Ask a grown-up to tell you about when they were little.","lc",15,"Connect"],
 ["Make a card for someone and tell them thank you.","sl",30,"Creative"],
 ["Build a blanket fort and read a book inside.","tab",30,"Relax"],
-["Go outside with a grown-up and look for 5 different leaves.","rcb",30,"Learn"]
+["Go outside with a grown-up and look for 5 different leaves.","rcb",30,"Learn"],
+["Pretend you are a cat and walk on tiptoes.","rb",5,"Move"],
+["Name 5 animals that live in water.","cb",5,"Brain game"],
+["Count the windows and doors in your home.","c",5,"Brain game"],
+["Hug your favorite toy and tell it about your day.","lst",5,"Connect"],
+["Close your eyes and listen for 5 different sounds.","ta",5,"Mindful"],
+["Make three funny faces in the mirror.","bsr",5,"Creative"],
+["Wiggle your whole body for 10 seconds, then freeze like a statue.","rb",5,"Move"],
+["Name three things that make you happy.","sl",5,"Reflect"],
+["Tell a grown-up one thing you are proud of.","ls",5,"Connect"],
+["Stretch up like a tall tree, then bend down like a rag doll.","tar",5,"Move"],
+["Make a paper boat or paper plane and test it.","cb",15,"Creative"],
+["Sort your toys by color.","rb",15,"Reset"],
+["Dance with a scarf or towel to your favorite song.","rb",15,"Music"],
+["Look at a picture book and make up your own story.","tcs",15,"Imagine"],
+["Make a mini obstacle course with pillows and jump through it.","r",30,"Move"],
+["Decorate a simple snack with a grown-up.","sl",30,"Creative"]
 ];
 const KT=[
 ["What color is the sky on a sunny day?","Blue",["Green","Red","Pink"]],["Which animal says moo?","Cow",["Dog","Cat","Duck"]],["How many days are in a week?","7",["5","10","12"]],["Which fruit is yellow and long?","Banana",["Apple","Grape","Orange"]],["What do bees make?","Honey",["Milk","Juice","Bread"]],["Which animal has a long trunk?","Elephant",["Lion","Rabbit","Cow"]],["How many legs does a dog have?","4",["2","6","8"]],["What shape is a ball?","Round",["Square","Triangle","Flat"]],["What do you use to brush your teeth?","Toothbrush",["Spoon","Comb","Shoe"]],["What comes after the number 5?","6",["4","7","9"]],["Which season is very cold and snowy?","Winter",["Summer","Spring","Rainy season"]],["Where do fish live?","In water",["In trees","In the sky","In a cave"]],["What color do you get from mixing red and yellow?","Orange",["Green","Purple","Blue"]],["What is the national fruit of the Philippines?","Mango",["Banana","Apple","Grapes"]],["How do we say thank you in Filipino?","Salamat",["Kumusta","Paalam","Pasensya"]]
@@ -736,7 +800,7 @@ const KT2=[
 ["Which planet do we live on?","Earth",["Mars","Moon","Sun"]],["How many months are in a year?","12",["10","11","13"]],["Which is the biggest animal in the ocean?","Blue whale",["Shark","Dolphin","Octopus"]],["What is 10 plus 5?","15",["14","16","20"]],["What is the capital of the Philippines?","Manila",["Cebu","Davao","Baguio"]],["Which of these can fly?","Bat",["Cow","Penguin","Dog"]]
 ];
 const KTL=[KT.slice(0,6),KT.slice(6,12),KT.slice(12).concat(KT2)];
-const LDK=[["4 pairs","6 pairs","8 pairs"],["Very slow, 1 step to start","Slow","A bit faster"],["Short words","Everyday words","Long words"],["Adding up to 6","Adding and taking away up to 10","Bigger numbers and easy times tables"],["Animals and colors","Easy facts about the world","Trickier facts"],["A gentle random game","A bit harder","A bigger challenge"],null,["4 lives","3 lives","2 lives"],["3×3 grid","3×4 grid","4×4 grid"]];
+const LDK=[["4 pairs","6 pairs","8 pairs"],["Very slow, 1 step to start","Slow","A bit faster"],["Short words","Everyday words","Long words"],["Adding up to 6","Adding and taking away up to 10","Bigger numbers and easy times tables"],["Animals and colors","Easy facts about the world","Trickier facts"],["A gentle random game","A bit harder","A bigger challenge"],null,["4 lives","3 lives","2 lives"],["3×3 grid","3×4 grid","4×4 grid"],["4 pieces","6 pieces","9 pieces"]];
 function loadMoments(){try{return JSON.parse(localStorage.getItem("bbMoments")||"[]")}catch(e){return[]}}
 function saveMoment(x,m){
   const L=loadMoments();L.unshift(x);
@@ -767,6 +831,7 @@ function addMoment(r,a){
   m.textContent=band()===0?"Ask a grown-up to help. Take a picture of what you made. Pictures stay on this device.":"Pictures stay on this device only.";
   b.onclick=()=>openCam(a);
   acts.appendChild(b);acts.after(m);
+  if(isPadAct(a)){const p=document.createElement("button");p.className="pill";p.textContent="✏️ Drawing pad";p.onclick=()=>openPad(a);acts.appendChild(p)}
 }
 function moments(){
   const box=$("momBox"),L=loadMoments();
@@ -812,6 +877,110 @@ $("camFlip").onclick=()=>{camFace=camFace==="environment"?"user":"environment";s
 function camLabel(){$("camBtn").textContent=S.cam===false?"📸 Camera after activities: off":"📸 Camera after activities: on"}
 $("camBtn").onclick=()=>{S.cam=(S.cam===false);save();camLabel()};
 camLabel();
+function scene(n){
+  const c=document.createElement("canvas");c.width=c.height=600;const x=c.getContext("2d");
+  const bg=(a,b)=>{const q=x.createLinearGradient(0,0,0,600);q.addColorStop(0,a);q.addColorStop(1,b);x.fillStyle=q;x.fillRect(0,0,600,600)};
+  const dot=(px,py,r,col)=>{x.fillStyle=col;x.beginPath();x.arc(px,py,r,0,7);x.fill()};
+  if(n===0){
+    bg("#7cc8ff","#d9f3ff");dot(480,110,60,"#ffd23f");x.fillStyle="#4caf50";x.fillRect(0,380,600,220);
+    [[100,330],[260,290],[420,340],[170,470],[350,500],[520,450]].forEach(([a,b])=>{x.fillStyle="#2e7d32";x.fillRect(a-5,b,10,600-b);for(let i=0;i<12;i++)dot(a+Math.cos(i*.52)*38,b+Math.sin(i*.52)*38,17,"#ffc400");dot(a,b,24,"#6d4c1d")});
+  }else if(n===1){
+    bg("#8fd3ff","#e8f7ff");
+    ["#e53935","#fb8c00","#fdd835","#43a047","#1e88e5","#8e24aa"].forEach((col,i)=>{x.strokeStyle=col;x.lineWidth=30;x.beginPath();x.arc(300,430,240-i*30,Math.PI,0);x.stroke()});
+    x.fillStyle="#66bb6a";x.fillRect(0,440,600,160);
+    [[110,90],[470,130]].forEach(([a,b])=>{dot(a,b,40,"#fff");dot(a+40,b+10,34,"#fff");dot(a-40,b+10,30,"#fff")});
+  }else if(n===2){
+    bg("#ff7e5f","#6a3093");dot(300,340,95,"#ffe082");x.fillStyle="#1565c0";x.fillRect(0,360,600,130);x.fillStyle="#0d47a1";x.fillRect(0,490,600,110);
+    x.fillStyle="#fff";x.beginPath();x.moveTo(430,290);x.lineTo(430,380);x.lineTo(510,380);x.fill();x.fillStyle="#6d4c41";x.fillRect(410,380,120,16);
+  }else{
+    bg("#0b1445","#2a3a8c");for(let i=0;i<40;i++)dot((i*97)%600,(i*53)%330,2+i%3,"#fff");
+    dot(450,120,55,"#fff8c4");dot(472,108,48,"#16206b");dot(150,650,280,"#1b5e20");dot(480,660,290,"#2e7d32");
+  }
+  return c;
+}
+function puzzle(){
+  const kid=band()===0,my=gtoken;
+  const [R,C]=(kid?[[2,2],[2,3],[3,3]]:band()===1?[[3,3],[4,4]]:[[3,3],[4,4],[5,5]])[lvl];
+  const N=R*C,img=scene(Math.floor(Math.random()*4)).toDataURL("image/jpeg",.85);
+  let tiles=[...Array(N).keys()],sel=-1,moves=0,won=false;
+  const solved=()=>tiles.every((t,i)=>t===i);
+  const nb=p=>{const r=Math.floor(p/C),c=p%C,l=[];if(r>0)l.push(p-C);if(r<R-1)l.push(p+C);if(c>0)l.push(p-1);if(c<C-1)l.push(p+1);return l};
+  if(kid){do{tiles.sort(()=>Math.random()-.5)}while(solved())}
+  else{do{for(let k=0;k<N*40;k++){const b=tiles.indexOf(N-1),n=nb(b),q=n[Math.floor(Math.random()*n.length)];[tiles[b],tiles[q]]=[tiles[q],tiles[b]]}}while(solved())}
+  G.innerHTML='<div class="info"><span id="pm1">Moves: 0</span><button class="pill" id="pk">👁 Peek</button></div><img id="pi" alt="The finished picture" style="display:none;width:96px;border-radius:10px;margin:0 auto 8px"><div class="pz" id="pg"></div><p id="pt" style="margin-top:8px"></p>';
+  $("pi").src=img;
+  $("pt").textContent=kid?"Tap one piece, then tap another to swap them.":"Slide the pieces into the empty space to rebuild the picture.";
+  const g=$("pg");g.style.setProperty("--img","url("+img+")");
+  g.style.gridTemplateColumns="repeat("+C+",1fr)";g.style.gridTemplateRows="repeat("+R+",1fr)";g.style.aspectRatio=C+"/"+R;
+  function draw(){
+    g.innerHTML="";
+    tiles.forEach((t,p)=>{
+      const b=document.createElement("button");b.className="pzt";b.setAttribute("aria-label","Piece "+(t+1));
+      if(!kid&&t===N-1&&!won){b.style.backgroundImage="none";b.style.background="rgba(0,0,0,.35)";b.disabled=true;b.setAttribute("aria-label","Empty space")}
+      else{b.style.backgroundSize=(C*100)+"% "+(R*100)+"%";b.style.backgroundPosition=(C>1?(t%C)/(C-1)*100:0)+"% "+(R>1?Math.floor(t/C)/(R-1)*100:0)+"%";if(!kid&&lvl===0)b.textContent=t+1}
+      if(sel===p)b.style.outline="4px solid #ffd23f";
+      b.onclick=()=>tap(p);g.appendChild(b);
+    });
+  }
+  function finish(){
+    confetti();award([20,35,50][lvl],"logic");
+    G.insertAdjacentHTML("beforeend",'<p style="margin-top:12px"><b>Puzzle solved in '+moves+' moves! 🎉</b></p><button class="pill main" id="again">New picture</button>');
+    $("again").onclick=puzzle;addChallenge("Picture puzzle","a solved puzzle in "+moves+" moves");
+  }
+  function tap(p){
+    if(won||my!==gtoken)return;
+    if(kid){
+      if(sel<0)sel=p;else if(sel===p)sel=-1;else{[tiles[sel],tiles[p]]=[tiles[p],tiles[sel]];sel=-1;moves++}
+    }else{
+      const b=tiles.indexOf(N-1);if(!nb(b).includes(p))return;
+      [tiles[b],tiles[p]]=[tiles[p],tiles[b]];moves++;
+    }
+    $("pm1").textContent="Moves: "+moves;
+    if(solved()){won=true;draw();finish()}else draw();
+  }
+  const pk=$("pk");
+  if(kid||lvl===0){$("pi").style.display="block";pk.style.display="none"}
+  else pk.onclick=()=>{$("pi").style.display="block";setTimeout(()=>{$("pi").style.display="none"},3000)};
+  draw();
+}
+const PADC=["#222222","#e53935","#fb8c00","#fdd835","#43a047","#1e88e5","#8e24aa","#ec407a"];
+let pCol=PADC[0],pSz=7,pErase=false,pAct=null,pSnap=[];
+function isPadAct(a){return /\b(draw|doodle|sketch|write|poem|postcard|card)\b/i.test(a[0])}
+function padCtx(){return $("padC").getContext("2d")}
+function openPad(a){
+  pAct=a;pSnap=[];$("pad").hidden=false;document.body.style.overflow="hidden";
+  $("padT").textContent=a?"✏️ "+a[0]:"✏️ Drawing pad";
+  const c=$("padC"),dpr=window.devicePixelRatio||1;
+  c.width=Math.round(c.clientWidth*dpr);c.height=Math.round(c.clientHeight*dpr);
+  padCtx().fillStyle="#fff";padCtx().fillRect(0,0,c.width,c.height);
+  $("padMsg").textContent="";buildTools();
+}
+function closePad(){$("pad").hidden=true;document.body.style.overflow=location.hash==="#play"?"hidden":""}
+function snap(){const c=$("padC");pSnap.push(padCtx().getImageData(0,0,c.width,c.height));if(pSnap.length>15)pSnap.shift()}
+function padUndo(){const s=pSnap.pop();if(s)padCtx().putImageData(s,0,0)}
+function padClear(){const c=$("padC");snap();padCtx().fillStyle="#fff";padCtx().fillRect(0,0,c.width,c.height)}
+function padSave(){
+  const c=$("padC"),sc=Math.min(1,480/Math.max(c.width,c.height)),o=document.createElement("canvas");
+  o.width=Math.round(c.width*sc);o.height=Math.round(c.height*sc);
+  const x=o.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,o.width,o.height);x.drawImage(c,0,0,o.width,o.height);
+  saveMoment({t:"✏️ "+(pAct?pAct[0]:"Free drawing"),d:new Date().toLocaleDateString(),img:o.toDataURL("image/jpeg",.7)},$("padMsg"));
+}
+function buildTools(){
+  const t=$("padTools");t.innerHTML="";
+  PADC.forEach(col=>{const b=document.createElement("button");b.className="sw";b.style.background=col;b.setAttribute("aria-label","Color "+col);b.setAttribute("aria-pressed",String(!pErase&&pCol===col));b.onclick=()=>{pCol=col;pErase=false;buildTools()};t.appendChild(b)});
+  [["•",3],["●",7],["⬤",14]].forEach(([n,s])=>{const b=document.createElement("button");b.className="chip";b.textContent=n;b.setAttribute("aria-label","Brush size "+s);b.setAttribute("aria-pressed",String(pSz===s));b.onclick=()=>{pSz=s;buildTools()};t.appendChild(b)});
+  [["🧽 Eraser",()=>{pErase=!pErase;buildTools()},pErase],["↩ Undo",padUndo],["🗑 Clear",padClear],["💾 Save",padSave]].forEach(([n,f,on])=>{const b=document.createElement("button");b.className="chip";b.textContent=n;if(on!==undefined)b.setAttribute("aria-pressed",String(on));b.onclick=f;t.appendChild(b)});
+}
+(function(){
+  const c=$("padC");let d=false,lx=0,ly=0;
+  const pos=e=>{const r=c.getBoundingClientRect();return[(e.clientX-r.left)*c.width/r.width,(e.clientY-r.top)*c.height/r.height]};
+  const stroke=(a,b,x2,y2)=>{const x=padCtx();x.lineCap="round";x.lineJoin="round";x.strokeStyle=pErase?"#fff":pCol;x.lineWidth=pSz*(c.width/c.getBoundingClientRect().width);x.beginPath();x.moveTo(a,b);x.lineTo(x2,y2);x.stroke()};
+  c.addEventListener("pointerdown",e=>{e.preventDefault();c.setPointerCapture(e.pointerId);snap();d=true;[lx,ly]=pos(e);stroke(lx,ly,lx,ly)});
+  c.addEventListener("pointermove",e=>{if(!d)return;const[x,y]=pos(e);stroke(lx,ly,x,y);lx=x;ly=y});
+  ["pointerup","pointercancel"].forEach(t=>c.addEventListener(t,()=>{d=false}));
+})();
+$("padX").onclick=closePad;
+$("padBtn").onclick=()=>openPad(null);
 function askAge(){$("age").hidden=false;$("ageIn").value=S.age||"";$("ageMsg").textContent="";$("ageIn").focus()}
 function applyAge(){
   lvl=Math.min(lvl,Math.max(...lvOK()));gsel=-1;last=-1;gtoken++;
