@@ -43,7 +43,7 @@ h2{font-size:1rem;margin:0 0 8px}
 .saved h2{margin:0 0 6px}
 .saved ul{margin:0;padding-left:20px}
 .saved li{margin:4px 0}
-.cf{position:fixed;top:-20px;width:10px;height:14px;border-radius:2px;pointer-events:none;z-index:20;animation:fall linear forwards}
+.cf{position:fixed;top:-20px;width:10px;height:14px;border-radius:2px;pointer-events:none;z-index:50;animation:fall linear forwards}
 @keyframes fall{to{transform:translateY(115vh) rotate(720deg)}}
 .games{margin-top:30px}
 .arena{background:var(--card);color:var(--cink);border-radius:24px;padding:18px;box-shadow:0 10px 0 rgba(0,0,0,.25);min-height:110px}
@@ -84,6 +84,16 @@ h2{font-size:1rem;margin:0 0 8px}
 .mom{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:10px}
 .mom img{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:14px;display:block}
 .mom figcaption{font-size:.8rem;color:var(--cmute);margin:4px 0 6px}
+.gfull{position:fixed;inset:0;z-index:25;overflow-y:auto;background:linear-gradient(160deg,var(--g1),var(--g2))}
+.gbar{position:sticky;top:0;z-index:2;display:flex;align-items:center;gap:12px;padding:calc(10px + env(safe-area-inset-top,0px)) 16px 10px;background:rgba(0,0,0,.28);backdrop-filter:blur(8px);color:#fff}
+.gbar b{font-size:1.05rem}
+#gexit{background:#fff;color:#2a1a8a;border-color:#fff}
+.gwrap{max-width:520px;margin:0 auto;padding:16px 16px calc(36px + env(safe-area-inset-bottom,0px))}
+.gwrap .arena{min-height:calc(100vh - 190px)}
+#gtabs{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+#gtabs .chip{padding:24px 10px;font-size:1rem;border-radius:20px;text-align:center}
+.camwrap{position:fixed;inset:0;z-index:35;background:rgba(10,5,40,.75);display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto}
+#camV{width:100%;max-height:48vh;border-radius:16px;background:#000;object-fit:cover;margin:8px 0}
 @keyframes bounce{50%{transform:translateY(-10px) scale(1.1)}}
 @media (prefers-reduced-motion:reduce){.popwrap,.popcard,.popemoji{animation:none}}
 .gobtn{display:block;text-align:center;text-decoration:none;background:#fff;color:#2a1a8a;font:700 1.25rem Georgia,serif;border-radius:24px;padding:22px 16px;margin-top:26px;box-shadow:0 8px 0 rgba(0,0,0,.28)}
@@ -121,16 +131,23 @@ h2{font-size:1rem;margin:0 0 8px}
 <button class="chip" id="share" style="display:block;margin:20px auto 0">📤 Share with a friend</button>
 <p style="text-align:center;font-size:.85rem;opacity:.85;margin-top:24px">Visits are counted anonymously. No names or personal details are collected, except answers that people aged 16 and over choose to send.</p>
 <button class="chip" id="ageBtn" style="display:block;margin:12px auto 0">🎂 Age</button>
+<button class="chip" id="camBtn" style="display:block;margin:10px auto 0">📸 Camera</button>
 </div>
 
 <section class="games" id="gamesView" hidden>
 <a class="back" href="#home">← Back to Bored Buster</a>
 <h2>🎮 Brain games</h2>
-<div class="row" id="gl" hidden></div>
+<p style="margin:0 0 12px;opacity:.9">Tap a game to play it full screen.</p>
 <div class="row" id="gtabs"></div>
-<div class="row" id="gt" hidden></div>
-<div class="arena" id="arena"><p>Pick a game above to start playing.</p></div>
 </section>
+<div class="gfull" id="gfull" hidden>
+<div class="gbar"><button class="pill" id="gexit">← Exit</button><b id="gtitle"></b></div>
+<div class="gwrap">
+<div class="row" id="gl" hidden></div>
+<div class="row" id="gt" hidden></div>
+<div class="arena" id="arena"><p>Pick a game.</p></div>
+</div>
+</div>
 <section id="brainView" hidden>
 <h2>🧠 Your brain profile</h2>
 <div class="arena" id="brainBox"></div>
@@ -146,6 +163,16 @@ h2{font-size:1rem;margin:0 0 8px}
 <h2 id="popT"></h2>
 <div class="acts"><button class="pill main" id="popGo">Let’s do it! 🎉</button><button class="pill" id="popNext">Another 🎲</button></div>
 <p class="popcat" id="popN"></p>
+</div>
+</div>
+<div class="camwrap" id="cam" hidden>
+<div class="popcard" role="dialog" aria-modal="true" aria-labelledby="camT">
+<p class="popcat">Do your activity, then take a picture! 📸</p>
+<h2 id="camT" style="font-size:1.15rem;margin-bottom:6px"></h2>
+<video id="camV" autoplay playsinline muted></video>
+<p class="popcat" id="camMsg" role="status" style="min-height:1.4em"></p>
+<div class="acts"><button class="pill main" id="camShot">📸 Take picture</button><button class="pill" id="camFlip">🔄 Flip</button><button class="pill" id="camSkip">Skip</button></div>
+<p class="popcat" id="camHint"></p>
 </div>
 </div>
 <div class="agewrap" id="age" hidden>
@@ -335,10 +362,10 @@ function openPop(a){
   $("popC").textContent=a[3]+" · about "+a[2]+" min";
   $("popT").textContent=a[0];
   $("popN").textContent=(mood==="s"||mood==="a")?"Be gentle with yourself. If the feeling stays heavy, please talk to someone you trust.":"";
-  p.hidden=false;$("popGo").focus();
+  curAct=a;p.hidden=false;$("popGo").focus();
 }
 function closePop(){$("pop").hidden=true}
-$("popGo").onclick=closePop;$("popX").onclick=closePop;
+$("popGo").onclick=()=>{closePop();if(S.cam!==false&&curAct)openCam(curAct)};$("popX").onclick=closePop;
 $("popNext").onclick=()=>{closePop();spin()};
 $("pop").onclick=e=>{if(e.target===$("pop"))closePop()};
 document.addEventListener("keydown",e=>{if(e.key==="Escape")closePop()});
@@ -365,7 +392,7 @@ function pickLevel(){
     $("lv").appendChild(b);
   });
 }
-function gChips(){chips($("gtabs"),GN.map((n,i)=>[i,n]).filter(([i])=>gOK().includes(i)),()=>gsel,k=>{gsel=k;pickLevel()})}
+function gChips(){chips($("gtabs"),GN.map((n,i)=>[i,n]).filter(([i])=>gOK().includes(i)),()=>gsel,k=>{gsel=k;$("gtitle").textContent=GN[k];location.hash="#play";pickLevel()})}
 gChips();
 chips($("gt"),[[0,"🌍 Mixed"],[1,"🇵🇭 Filipino"],[2,"🔬 Science"],[3,"🍜 Food & music"]],()=>topic,k=>{topic=k;if(gsel===4&&!$("gl").hidden)run()});
 
@@ -735,16 +762,16 @@ function pickPhoto(a,m){
 }
 function addMoment(r,a){
   const acts=r.querySelector(".acts");if(!acts)return;
-  const b=document.createElement("button");b.className="pill";b.textContent="📸 Save my moment";
+  const b=document.createElement("button");b.className="pill";b.textContent="📸 Take a picture";
   const m=document.createElement("p");m.setAttribute("role","status");m.style.margin="10px 0 0";m.style.fontSize=".85rem";
   m.textContent=band()===0?"Ask a grown-up to help. Take a picture of what you made. Pictures stay on this device.":"Pictures stay on this device only.";
-  b.onclick=()=>pickPhoto(a,m);
+  b.onclick=()=>openCam(a);
   acts.appendChild(b);acts.after(m);
 }
 function moments(){
   const box=$("momBox"),L=loadMoments();
   box.innerHTML="";
-  if(!L.length){box.textContent="Do an activity, then tap 📸 Save my moment to keep a picture of what you made. Pictures stay on this device only.";return}
+  if(!L.length){box.textContent="Tap Let’s do it! on an activity, then take a picture of what you did. Pictures stay on this device only.";return}
   const p=document.createElement("p");p.textContent="Pictures stay on this device only. The last 12 are kept.";box.appendChild(p);
   const g=document.createElement("div");g.className="mom";
   L.forEach((x,i)=>{
@@ -757,6 +784,34 @@ function moments(){
   });
   box.appendChild(g);
 }
+let curAct=null,camAct=null,camStream=null,camFace="environment";
+function stopCam(){if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null}$("cam").hidden=true}
+async function startCam(){
+  try{
+    if(camStream)camStream.getTracks().forEach(t=>t.stop());
+    camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:camFace},audio:false});
+    $("camV").srcObject=camStream;$("camMsg").textContent="";
+  }catch(e){$("camMsg").textContent="The camera is not available. You can tap Skip.";$("camShot").disabled=true}
+}
+function openCam(a){
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia)return;
+  camAct=a;$("camT").textContent=a[0];$("camShot").disabled=false;$("camMsg").textContent="";
+  $("camHint").textContent=band()===0?"Ask a grown-up to help. Take a picture of what you made, not of people. Pictures stay on this device.":"Pictures stay on this device only.";
+  $("cam").hidden=false;startCam();
+}
+$("camShot").onclick=()=>{
+  const v=$("camV");if(!v.videoWidth)return;
+  const sc=Math.min(1,480/Math.max(v.videoWidth,v.videoHeight)),c=document.createElement("canvas");
+  c.width=Math.round(v.videoWidth*sc);c.height=Math.round(v.videoHeight*sc);
+  c.getContext("2d").drawImage(v,0,0,c.width,c.height);
+  saveMoment({t:camAct[0],d:new Date().toLocaleDateString(),img:c.toDataURL("image/jpeg",0.6)},$("camMsg"));
+  $("camShot").disabled=true;setTimeout(stopCam,1300);
+};
+$("camSkip").onclick=stopCam;
+$("camFlip").onclick=()=>{camFace=camFace==="environment"?"user":"environment";startCam()};
+function camLabel(){$("camBtn").textContent=S.cam===false?"📸 Camera after activities: off":"📸 Camera after activities: on"}
+$("camBtn").onclick=()=>{S.cam=(S.cam===false);save();camLabel()};
+camLabel();
 function askAge(){$("age").hidden=false;$("ageIn").value=S.age||"";$("ageMsg").textContent="";$("ageIn").focus()}
 function applyAge(){
   lvl=Math.min(lvl,Math.max(...lvOK()));gsel=-1;last=-1;gtoken++;
@@ -774,6 +829,7 @@ $("ageGo").onclick=()=>{
 };
 $("ageIn").onkeydown=e=>{if(e.key==="Enter")$("ageGo").click()};
 $("ageBtn").onclick=askAge;
+$("gexit").onclick=()=>{history.back();setTimeout(()=>{if(location.hash==="#play")location.replace("#games")},300)};
 if(!S.age)askAge();else applyAge();
 function track(p){
   let n=0;
@@ -783,13 +839,16 @@ function track(p){
   })();
 }
 function route(){
-  const g=location.hash==="#games";
-  track(g?"/brain-games":"/home");
+  const pl=location.hash==="#play";
+  if(pl&&gsel<0){location.replace("#games");return}
+  const g=location.hash==="#games"||pl;
+  track(pl?"/play":g?"/brain-games":"/home");
   const b=location.hash==="#brain";
   $("home").hidden=g||b;$("gamesView").hidden=!g;$("brainView").hidden=!b;
   [["tabH",!g&&!b],["tabG",g],["tabB",b]].forEach(([id,on])=>$(id).setAttribute("aria-current",on?"page":"false"));
   stat();renderSaved();if(b){brain();moments()}
-  if(!g&&gsel>=0){gtoken++;gsel=-1;G.innerHTML="<p>Pick a game above to start playing.</p>";$("gt").hidden=true;$("gl").hidden=true;$("gtabs").querySelectorAll(".chip").forEach(c=>c.setAttribute("aria-pressed","false"))}
+  if(!pl&&gsel>=0){gtoken++;gsel=-1;gChips();G.innerHTML="<p>Pick a game above to start playing.</p>";$("gt").hidden=true;$("gl").hidden=true;$("gtabs").querySelectorAll(".chip").forEach(c=>c.setAttribute("aria-pressed","false"))}
+  $("gfull").hidden=!pl;document.body.style.overflow=pl?"hidden":"";
   window.scrollTo(0,0);
 }
 addEventListener("hashchange",route);route();
