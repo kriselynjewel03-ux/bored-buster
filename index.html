@@ -70,6 +70,17 @@ h2{font-size:1rem;margin:0 0 8px}
 .sk{display:grid;grid-template-columns:112px 1fr 44px;gap:8px;align-items:center;margin:10px 0}
 .bar{background:rgba(128,128,128,.25);border-radius:99px;height:12px;overflow:hidden}
 .bar i{display:block;height:100%;background:var(--acc);border-radius:99px}
+.popwrap{position:fixed;inset:0;background:rgba(10,5,40,.6);display:flex;align-items:center;justify-content:center;padding:20px;z-index:30;animation:fadein .2s}
+.popcard{position:relative;background:var(--card);color:var(--cink);border-radius:28px;padding:28px 22px 22px;max-width:380px;width:100%;text-align:center;border-top:10px solid var(--acc);box-shadow:0 14px 0 rgba(0,0,0,.25);animation:burst .5s cubic-bezier(.2,1.7,.4,1)}
+.popcard h2{font-size:1.4rem;line-height:1.35;margin:0 0 18px}
+.popcard .acts{justify-content:center}
+.popemoji{font-size:3.4rem;line-height:1;animation:bounce 1s ease-in-out 2}
+.popcat{color:var(--cmute);margin:8px 0 4px}
+.popx{position:absolute;top:6px;right:8px;border:0;background:none;color:var(--cmute);font-size:1.3rem;padding:8px;cursor:pointer}
+@keyframes burst{from{transform:scale(.3) rotate(-8deg);opacity:0}to{transform:none;opacity:1}}
+@keyframes fadein{from{opacity:0}}
+@keyframes bounce{50%{transform:translateY(-10px) scale(1.1)}}
+@media (prefers-reduced-motion:reduce){.popwrap,.popcard,.popemoji{animation:none}}
 .gobtn{display:block;text-align:center;text-decoration:none;background:#fff;color:#2a1a8a;font:700 1.25rem Georgia,serif;border-radius:24px;padding:22px 16px;margin-top:26px;box-shadow:0 8px 0 rgba(0,0,0,.28)}
 .gobtn small{display:block;font:400 .9rem "Trebuchet MS",system-ui,sans-serif;opacity:.8;margin-top:2px}
 .gobtn:active{transform:translateY(5px);box-shadow:0 3px 0 rgba(0,0,0,.28)}
@@ -119,9 +130,19 @@ h2{font-size:1rem;margin:0 0 8px}
 <div class="arena" id="brainBox"></div>
 </section>
 </main>
+<div class="popwrap" id="pop" hidden>
+<div class="popcard" role="dialog" aria-modal="true" aria-labelledby="popT">
+<button class="popx" id="popX" aria-label="Close">✕</button>
+<div class="popemoji" id="popE"></div>
+<p class="popcat" id="popC"></p>
+<h2 id="popT"></h2>
+<div class="acts"><button class="pill main" id="popGo">Let’s do it! 🎉</button><button class="pill" id="popNext">Another 🎲</button></div>
+<p class="popcat" id="popN"></p>
+</div>
+</div>
 
 <script>
-const MOODS={t:"😴 Tired",r:"⚡ Restless",l:"🫂 Lonely",c:"🔍 Curious"};
+const MOODS={t:"😴 Tired",r:"⚡ Restless",l:"🫂 Lonely",c:"🔍 Curious",s:"😢 Sad",a:"😰 Anxious",b:"🥱 Bored"};
 const TIMES=[5,15,30];
 // [text, moods, minutes, category]
 const A=[
@@ -162,7 +183,27 @@ const A=[
 ["Start a 30-minute puzzle, a crossword or a jigsaw.","tc",30,"Brain game"],
 ["Write a short story about a stranger you saw today.","tc",30,"Creative"],
 ["Do a full body stretch or yoga session with a free video.","tr",30,"Move"],
-["Look through old photos and send one to the person in it.","tl",30,"Connect"]
+["Look through old photos and send one to the person in it.","tl",30,"Connect"],
+["Put on a song that lifts your mood and sing along out loud.","s",5,"Music"],
+["Write down 3 things you are grateful for, even small ones.","s",5,"Reflect"],
+["Text someone who makes you smile and say hello.","s",5,"Connect"],
+["Watch a funny video you love and let yourself laugh.","s",15,"Relax"],
+["Cook or bake your favorite comfort food and enjoy it slowly.","s",30,"Creative"],
+["Go outside for a gentle walk and notice the sky.","s",30,"Move"],
+["Try box breathing: in for 4, hold 4, out for 4, hold 4. Repeat 5 times.","a",5,"Relax"],
+["Name 5 things you see, 4 you can touch, 3 you hear, 2 you smell and 1 you taste.","a",5,"Mindful"],
+["Write every worry on paper, then circle the one you can act on today.","a",15,"Reflect"],
+["Slowly stretch your neck, shoulders and hands for 10 minutes.","a",15,"Move"],
+["Make a calming playlist of 8 slow songs.","a",15,"Music"],
+["Take a slow 30-minute walk without your phone.","a",30,"Move"],
+["Tidy one small area, then sit and enjoy how calm it feels.","a",30,"Reset"],
+["Invent a new word, give it a meaning and use it in a sentence.","b",5,"Creative"],
+["Dance until your song ends, with no stopping.","b",5,"Move"],
+["Draw your room from memory, then compare it with the real thing.","b",15,"Creative"],
+["Learn a magic trick or a new card game from a video.","b",15,"Learn"],
+["Call a friend and play 20 questions.","b",15,"Connect"],
+["Take a 30-minute photo walk and capture 10 interesting things.","b",30,"Creative"],
+["Plan a small surprise for someone: a message, a meal or a tiny gift.","b",30,"Connect"]
 ];
 const EMO={"Brain game":"🧠","Memory game":"🧩","Would you rather":"🤔","Creative":"🎨","Mindful":"🧘","Move":"💃","Relax":"🫖","Connect":"💬","Reflect":"📝","Learn":"💡","Reset":"🧹","Music":"🎵","Imagine":"✈️"};
 const CATS=Object.keys(EMO);
@@ -221,7 +262,7 @@ function show(a){
   r.querySelector(".emoji").textContent=EMO[a[3]]||"⚡";
   r.querySelector(".cat").textContent=a[3]+" · about "+a[2]+" min";
   r.querySelector(".act").textContent=a[0];
-  void r.offsetWidth;r.classList.add("pop");
+  void r.offsetWidth;r.classList.add("pop");openPop(a);
   $("done").onclick=()=>{done++;award(5);confetti();$("done").textContent="Nice work! 🙌";$("done").disabled=true};
   $("save").onclick=()=>{if(!saved.includes(a[0])){saved.push(a[0]);S.saved=saved;save();renderSaved()}$("save").textContent="♥ Saved"};
   $("skip").onclick=()=>spin();
@@ -266,9 +307,24 @@ function renderSaved(){
 }
 $("go").onclick=spin;
 
-const G=$("arena"),GN=["🧩 Memory","🔴 Pattern","🔤 Words","➕ Quick math","🧠 Trivia","🎲 Surprise me","📅 Daily word","🕵️ Mystery"];
+function openPop(a){
+  const p=$("pop");
+  p.style.setProperty("--acc","hsl("+(CATS.indexOf(a[3])*27+250)%360+" 70% 42%)");
+  $("popE").textContent=EMO[a[3]]||"⚡";
+  $("popC").textContent=a[3]+" · about "+a[2]+" min";
+  $("popT").textContent=a[0];
+  $("popN").textContent=(mood==="s"||mood==="a")?"Be gentle with yourself. If the feeling stays heavy, please talk to someone you trust.":"";
+  p.hidden=false;$("popGo").focus();
+}
+function closePop(){$("pop").hidden=true}
+$("popGo").onclick=closePop;$("popX").onclick=closePop;
+$("popNext").onclick=()=>{closePop();spin()};
+$("pop").onclick=e=>{if(e.target===$("pop"))closePop()};
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closePop()});
+
+const G=$("arena"),GN=["🧩 Memory","🔴 Pattern","🔤 Words","➕ Quick math","🧠 Trivia","🎲 Surprise me","📅 Daily word","🕵️ Mystery","🔢 Number rush"];
 let gsel=-1,lvl=1,gtoken=0,topic=0;const bestMoves=S.best.mem||[0,0,0];
-function run(){gtoken++;$("gt").hidden=gsel!==4;const F=[mem,pat,wrd,mth,tri,0,daily,mys];F[gsel===5?Math.floor(Math.random()*5):gsel]()}
+function run(){gtoken++;$("gt").hidden=gsel!==4;const F=[mem,pat,wrd,mth,tri,0,daily,mys,rush];F[gsel===5?Math.floor(Math.random()*5):gsel]()}
 chips($("gl"),[[0,"🟢 Easy"],[1,"🟡 Medium"],[2,"🔴 Hard"]],()=>lvl,k=>{lvl=k;if(gsel>=0)run()});
 chips($("gtabs"),GN.map((n,i)=>[i,n]),()=>gsel,k=>{gsel=k;run()});
 chips($("gt"),[[0,"🌍 Mixed"],[1,"🇵🇭 Filipino"],[2,"🔬 Science"],[3,"🍜 Food & music"]],()=>topic,k=>{topic=k;if(gsel===4)run()});
@@ -412,10 +468,13 @@ const TP=[[
 const SK={memory:"🧩 Memory",focus:"🎯 Focus",words:"🔤 Words",math:"➕ Math",knowledge:"🧠 Knowledge",logic:"🕵️ Logic"};
 function brain(){
   const box=$("brainBox"),sk=S.skill||{},ent=Object.entries(SK);
+  const y=new Date();y.setDate(y.getDate()-1);
+  const alive=S.last===dayStr(new Date())||S.last===dayStr(y);
+  const top='<p><b>🔥 '+(alive?S.streak:0)+'-day streak · ⭐ '+S.points+' points</b></p>';
   if(!ent.some(([k])=>sk[k]>0)){box.innerHTML="<p>Play a few games to see your strengths here.</p>";return}
   const max=Math.max(100,...ent.map(([k])=>sk[k]||0));
   const hi=ent.reduce((a,b)=>(sk[b[0]]||0)>(sk[a[0]]||0)?b:a),lo=ent.reduce((a,b)=>(sk[b[0]]||0)<(sk[a[0]]||0)?b:a);
-  box.innerHTML=ent.map(([k,n])=>'<div class="sk"><span>'+n+'</span><div class="bar"><i style="width:'+Math.round((sk[k]||0)/max*100)+'%"></i></div><b>'+(sk[k]||0)+'</b></div>').join("")+'<p style="margin-top:14px"><b>Strongest: '+hi[1]+'.</b> Train '+lo[1]+' next to balance your brain.</p>';
+  box.innerHTML=top+ent.map(([k,n])=>'<div class="sk"><span>'+n+'</span><div class="bar"><i style="width:'+Math.round((sk[k]||0)/max*100)+'%"></i></div><b>'+(sk[k]||0)+'</b></div>').join("")+'<p style="margin-top:14px"><b>Strongest: '+hi[1]+'.</b> Train '+lo[1]+' next to balance your brain.</p>';
 }
 const DW=["tiger","plant","music","bread","cloud","dream","beach","smile","river","house","lemon","honey","storm","train","zebra","candy","pearl","tulip","water","happy","brave","light","night","ocean","green","stone","wheel","queen","magic","grape","chair","clock","dance","earth","fruit","heart","juice","knife","laugh","money","paper","radio","sheep","table","uncle","voice","whale","young","angel","bloom","crown","drink","eagle","flame","ghost","hotel","plane"];
 function daily(){
@@ -510,6 +569,33 @@ function mys(){
     }
     show();
   }
+}
+function rush(){
+  const N=[9,16,25][lvl],cols=[3,4,5][lvl];
+  const nums=Array.from({length:N},(_,i)=>i+1).sort(()=>Math.random()-.5);
+  let next=1,t0=0,iv=null;
+  S.best.rush=S.best.rush||[0,0,0];
+  G.innerHTML='<div class="info"><span id="rn">Tap 1</span><span id="rt">⏱ 0.0s</span></div><div class="grid" id="rg" style="grid-template-columns:repeat('+cols+',1fr)"></div><p style="margin-top:12px" id="rm"></p>';
+  $("rm").textContent=S.best.rush[lvl]?"Best: "+S.best.rush[lvl].toFixed(1)+"s":"Tap the numbers in order, from 1 up, as fast as you can.";
+  const rt=$("rt");
+  nums.forEach(n=>{
+    const b=document.createElement("button");b.className="mc up";b.textContent=n;b.style.fontSize="1.4rem";b.style.fontWeight="700";
+    b.onclick=()=>{
+      if(n!==next){b.style.background="#ffd3d3";setTimeout(()=>{b.style.background=""},250);return}
+      if(next===1){t0=performance.now();iv=setInterval(()=>{if(!rt.isConnected){clearInterval(iv);return}rt.textContent="⏱ "+((performance.now()-t0)/1000).toFixed(1)+"s"},100)}
+      b.className="mc ok";b.disabled=true;next++;
+      $("rn").textContent=next>N?"Done!":"Tap "+next;
+      if(next>N){
+        clearInterval(iv);
+        const secs=(performance.now()-t0)/1000,pb=!S.best.rush[lvl]||secs<S.best.rush[lvl];
+        if(pb)S.best.rush[lvl]=secs;
+        confetti();award([10,20,30][lvl]+(pb?10:0),"focus");
+        G.insertAdjacentHTML("beforeend",'<p style="margin-top:14px"><b>Finished in '+secs.toFixed(1)+' seconds! '+(pb?"New best! 🏆":"🎉")+'</b></p><button class="pill main" id="again">Play again</button>');
+        $("again").onclick=rush;addChallenge("Number rush","a time of "+secs.toFixed(1)+" seconds");
+      }
+    };
+    $("rg").appendChild(b);
+  });
 }
 const seenQ=new Set();
 const TX=[[["How many days are in a leap year?","366",["365","364","367"]],["Which animal is known as the king of the jungle?","Lion",["Tiger","Elephant","Gorilla"]],["What color do you get when you mix blue and yellow?","Green",["Orange","Purple","Brown"]],["How many sides does a triangle have?","3",["4","5","6"]],["Which planet do we live on?","Earth",["Mars","Venus","Saturn"]],["What is the tallest animal in the world?","Giraffe",["Elephant","Horse","Camel"]],["Which season comes after winter?","Spring",["Summer","Autumn","Monsoon"]],["Which gas do humans need to breathe to live?","Oxygen",["Nitrogen","Helium","Carbon dioxide"]],["In which country is the Eiffel Tower?","France",["Italy","Spain","Germany"]],["What is the capital of South Korea?","Seoul",["Busan","Tokyo","Incheon"]],["How many colors are in a rainbow?","7",["5","6","8"]],["Which language is mostly spoken in Brazil?","Portuguese",["Spanish","English","French"]],["What is the largest planet in our solar system?","Jupiter",["Saturn","Neptune","Earth"]]],
