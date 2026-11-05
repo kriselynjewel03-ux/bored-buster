@@ -120,7 +120,7 @@ h2{font-size:1rem;margin:0 0 8px}
 <section class="games" id="gamesView" hidden>
 <a class="back" href="#home">← Back to Bored Buster</a>
 <h2>🎮 Brain games</h2>
-<div class="row" id="gl"></div>
+<div class="row" id="gl" hidden></div>
 <div class="row" id="gtabs"></div>
 <div class="row" id="gt" hidden></div>
 <div class="arena" id="arena"><p>Pick a game above to start playing.</p></div>
@@ -325,9 +325,25 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape")closePop()});
 const G=$("arena"),GN=["🧩 Memory","🔴 Pattern","🔤 Words","➕ Quick math","🧠 Trivia","🎲 Surprise me","📅 Daily word","🕵️ Mystery","🔢 Number rush"];
 let gsel=-1,lvl=1,gtoken=0,topic=0;const bestMoves=S.best.mem||[0,0,0];
 function run(){gtoken++;$("gt").hidden=gsel!==4;const F=[mem,pat,wrd,mth,tri,0,daily,mys,rush];F[gsel===5?Math.floor(Math.random()*5):gsel]()}
-chips($("gl"),[[0,"🟢 Easy"],[1,"🟡 Medium"],[2,"🔴 Hard"]],()=>lvl,k=>{lvl=k;if(gsel>=0)run()});
-chips($("gtabs"),GN.map((n,i)=>[i,n]),()=>gsel,k=>{gsel=k;run()});
-chips($("gt"),[[0,"🌍 Mixed"],[1,"🇵🇭 Filipino"],[2,"🔬 Science"],[3,"🍜 Food & music"]],()=>topic,k=>{topic=k;if(gsel===4)run()});
+const LVL=[[0,"🟢 Easy"],[1,"🟡 Medium"],[2,"🔴 Hard"]];
+function lvChips(){chips($("gl"),LVL,()=>lvl,k=>{lvl=k;run()})}
+lvChips();
+const LD=[["6 pairs","8 pairs","12 pairs"],["Slow, starts at 1 step","Faster","Very fast, starts at 3 steps"],["Short words","Everyday words","Long words"],["Small sums","Times tables and bigger sums","Squares, division and percentages"],["General knowledge","School and world facts","Tough questions, 3 lives"],["A gentle random game","A balanced random game","A tough random game"],null,["4 lives","3 lives","2 lives"],["3×3 grid","4×4 grid","5×5 grid"]];
+function pickLevel(){
+  gtoken++;
+  $("gl").hidden=true;$("gt").hidden=gsel!==4;
+  if(!LD[gsel]){run();return}
+  G.innerHTML='<p><b>Choose your level</b></p><div id="lv"></div>';
+  LVL.forEach(([k,n])=>{
+    const b=document.createElement("button");b.className="pill opt";
+    b.innerHTML="<b></b><br><small></small>";
+    b.querySelector("b").textContent=n;b.querySelector("small").textContent=LD[gsel][k];
+    b.onclick=()=>{lvl=k;lvChips();$("gl").hidden=false;run()};
+    $("lv").appendChild(b);
+  });
+}
+chips($("gtabs"),GN.map((n,i)=>[i,n]),()=>gsel,k=>{gsel=k;pickLevel()});
+chips($("gt"),[[0,"🌍 Mixed"],[1,"🇵🇭 Filipino"],[2,"🔬 Science"],[3,"🍜 Food & music"]],()=>topic,k=>{topic=k;if(gsel===4&&!$("gl").hidden)run()});
 
 function mem(){
   const E=["🍎","🐱","🌻","🚀","🎸","🍰","🦋","⚽","🍕","🐼","🎲","🌈","🐙","🎨","🍩","🌙","🐢","🎧","🚲","🍉","🦄","⛄","🔔","🍄"].sort(()=>Math.random()-.5).slice(0,[6,8,12][lvl]);
@@ -650,7 +666,7 @@ function route(){
   $("home").hidden=g||b;$("gamesView").hidden=!g;$("brainView").hidden=!b;
   [["tabH",!g&&!b],["tabG",g],["tabB",b]].forEach(([id,on])=>$(id).setAttribute("aria-current",on?"page":"false"));
   stat();renderSaved();if(b)brain();
-  if(!g&&gsel>=0){gtoken++;gsel=-1;G.innerHTML="<p>Pick a game above to start playing.</p>";$("gt").hidden=true;$("gtabs").querySelectorAll(".chip").forEach(c=>c.setAttribute("aria-pressed","false"))}
+  if(!g&&gsel>=0){gtoken++;gsel=-1;G.innerHTML="<p>Pick a game above to start playing.</p>";$("gt").hidden=true;$("gl").hidden=true;$("gtabs").querySelectorAll(".chip").forEach(c=>c.setAttribute("aria-pressed","false"))}
   window.scrollTo(0,0);
 }
 addEventListener("hashchange",route);route();
