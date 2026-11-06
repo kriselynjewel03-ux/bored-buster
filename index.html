@@ -67,6 +67,10 @@ h2{font-size:1rem;margin:0 0 8px}
 .tabs a[aria-current="page"]{background:#fff;color:#2a1a8a;box-shadow:0 3px 0 rgba(0,0,0,.22)}
 .tabs a:focus-visible{outline:3px solid #fff;outline-offset:2px}
 .tabs a{padding:12px 4px;font-size:.92rem}
+.gear{flex:none;border:0;background:none;color:#fff;font-size:1.25rem;padding:0 12px;cursor:pointer}
+.gear:focus-visible{outline:3px solid #fff;border-radius:999px}
+details.ans summary{font-weight:700;cursor:pointer;padding:4px 0}
+details.ans[open] summary{margin-bottom:8px}
 .sk{display:grid;grid-template-columns:112px 1fr 44px;gap:8px;align-items:center;margin:10px 0}
 .bar{background:rgba(128,128,128,.25);border-radius:99px;height:12px;overflow:hidden}
 .bar i{display:block;height:100%;background:var(--acc);border-radius:99px}
@@ -118,7 +122,7 @@ h2{font-size:1rem;margin:0 0 8px}
 </head>
 <body>
 <main>
-<nav class="tabs" aria-label="Sections"><a href="#home" id="tabH" aria-current="page">✨ Activities</a><a href="#games" id="tabG">🎮 Games</a><a href="#brain" id="tabB">🧠 My brain</a></nav>
+<nav class="tabs" aria-label="Sections"><a href="#home" id="tabH" aria-current="page">✨ Activities</a><a href="#games" id="tabG">🎮 Games</a><a href="#brain" id="tabB">🧠 My brain</a><button class="gear" id="gearBtn" aria-label="Settings">⚙️</button></nav>
 <div id="home">
 <h1>Bored Buster <span>⚡</span></h1>
 <p class="sub">Tell us how you feel and how long you have. We’ll pick something.</p>
@@ -134,16 +138,9 @@ h2{font-size:1rem;margin:0 0 8px}
 
 <p class="stat" id="stat"></p>
 <div id="saved"></div>
-<a class="gobtn" href="#games">🎮 Play brain games<small>5 games, 3 levels: easy, medium, hard</small></a>
-<button class="chip" id="padBtn" style="display:block;margin:20px auto 0">✏️ Free drawing pad</button>
-<button class="chip" id="share" style="display:block;margin:12px auto 0">📤 Share with a friend</button>
-<p style="text-align:center;font-size:.85rem;opacity:.85;margin-top:24px">Visits are counted anonymously. No names or personal details are collected, except answers that people aged 16 and over choose to send.</p>
-<button class="chip" id="ageBtn" style="display:block;margin:12px auto 0">🎂 Age</button>
-<button class="chip" id="camBtn" style="display:block;margin:10px auto 0">📸 Camera</button>
 </div>
 
 <section class="games" id="gamesView" hidden>
-<a class="back" href="#home">← Back to Bored Buster</a>
 <h2>🎮 Brain games</h2>
 <p style="margin:0 0 12px;opacity:.9">Tap a game to play it full screen.</p>
 <div class="row" id="gtabs"></div>
@@ -171,6 +168,19 @@ h2{font-size:1rem;margin:0 0 8px}
 <h2 id="popT"></h2>
 <div class="acts"><button class="pill main" id="popGo">Let’s do it! 🎉</button><button class="pill" id="popNext">Another 🎲</button></div>
 <p class="popcat" id="popN"></p>
+</div>
+</div>
+<div class="popwrap" id="set" hidden>
+<div class="popcard" role="dialog" aria-modal="true" aria-labelledby="setT">
+<button class="popx" id="setX" aria-label="Close">✕</button>
+<h2 id="setT">⚙️ Settings</h2>
+<div class="acts" style="flex-direction:column;align-items:stretch">
+<button class="pill" id="ageBtn">🎂 Age</button>
+<button class="pill" id="camBtn">📸 Camera</button>
+<button class="pill" id="share">📤 Share with a friend</button>
+<button class="pill" id="resetBtn">🗑 Reset my progress</button>
+</div>
+<p class="popcat" style="margin-top:14px">Visits are counted anonymously. Progress and pictures stay on this device. Answers are only collected from people aged 16 and over, if they choose to send them.</p>
 </div>
 </div>
 <div class="gfull" id="pad" hidden>
@@ -204,7 +214,7 @@ h2{font-size:1rem;margin:0 0 8px}
 </div>
 
 <script>
-const MOODS={t:"😴 Tired",r:"⚡ Restless",l:"🫂 Lonely",c:"🔍 Curious",s:"😢 Sad",a:"😰 Anxious",b:"🥱 Bored"};
+const MOODS={b:"🥱 Bored",t:"😴 Tired",r:"⚡ Restless",s:"😢 Sad",a:"😰 Anxious",l:"🫂 Lonely",c:"🔍 Curious"};
 const TIMES=[5,15,30];
 // [text, moods, minutes, category]
 const A=[
@@ -310,7 +320,7 @@ function award(pts,skill){
   if(S.last!==t){const y=new Date();y.setDate(y.getDate()-1);S.streak=S.last===dayStr(y)?S.streak+1:1;S.last=t}
   S.points+=pts;if(skill){S.skill=S.skill||{};S.skill[skill]=(S.skill[skill]||0)+pts}save();stat();
 }
-let mood="t",time=15,last=-1,done=0,busy=false;const saved=Array.isArray(S.saved)?S.saved.slice():[],seen=new Set();
+let mood="b",time=15,last=-1,done=0,busy=false;const saved=Array.isArray(S.saved)?S.saved.slice():[],seen=new Set();
 const $=id=>document.getElementById(id);
 const calm=()=>matchMedia("(prefers-reduced-motion:reduce)").matches;
 const FORM_URL="https://docs.google.com/forms/d/e/1FAIpQLSfrGbXINCO25zBaXib_cuDGKH04zqI6tfN-TG6Q-ZAFpFAQVg/formResponse";
@@ -352,7 +362,7 @@ function show(a){
   r.classList.remove("pop");
   if(!a){r.innerHTML='<div class="body"><p class="act">No match for that mood and time. Try a longer time.</p></div>';return}
   r.style.setProperty("--acc","hsl("+(CATS.indexOf(a[3])*27+250)%360+" 70% 42%)");
-  r.innerHTML='<div class="banner"><span class="emoji"></span><span class="cat"></span></div><div class="body"><p class="act"></p><div class="acts"><button class="pill main" id="done">I did it! 🎉</button><button class="pill" id="save">♡ Save</button><button class="pill" id="skip">Next 🎲</button></div><div class="ans"><label for="ansBox">How did it go? (optional)</label><textarea id="ansBox" maxlength="500" rows="3" placeholder="Write your answer here"></textarea><button class="pill" id="send">Send answer</button><small id="ansMsg">Your answer is sent privately to the app creator. Please don’t share names, phone numbers or other personal details.</small></div></div>';
+  r.innerHTML='<div class="banner"><span class="emoji"></span><span class="cat"></span></div><div class="body"><p class="act"></p><div class="acts"><button class="pill main" id="done">I did it! 🎉</button><button class="pill" id="save">♡ Save</button></div><details class="ans"><summary>💬 How did it go? (optional)</summary><textarea id="ansBox" maxlength="500" rows="3" placeholder="Write your answer here"></textarea><button class="pill" id="send">Send answer</button><small id="ansMsg">Your answer is sent privately to the app creator. Please don’t share names, phone numbers or other personal details.</small></details></div>';
   r.querySelector(".emoji").textContent=EMO[a[3]]||"⚡";
   r.querySelector(".cat").textContent=a[3]+" · about "+a[2]+" min";
   r.querySelector(".act").textContent=a[0];
@@ -361,7 +371,6 @@ function show(a){
   addMoment(r,a);
   $("done").onclick=()=>{done++;award(5);confetti();$("done").textContent="Nice work! 🙌";$("done").disabled=true};
   $("save").onclick=()=>{if(!saved.includes(a[0])){saved.push(a[0]);S.saved=saved;save();renderSaved()}$("save").textContent="♥ Saved"};
-  $("skip").onclick=()=>spin();
   if($("send"))$("send").onclick=async()=>{
     const v=$("ansBox").value.trim();
     if(!v){$("ansMsg").textContent="Please write something first.";return}
@@ -413,12 +422,12 @@ function openPop(a){
   curAct=a;p.hidden=false;$("popGo").focus();
 }
 function closePop(){$("pop").hidden=true}
-$("popGo").onclick=()=>{closePop();if(curAct&&isPadAct(curAct))openPad(curAct);else if(S.cam!==false&&curAct)openCam(curAct)};$("popX").onclick=closePop;
+$("popGo").onclick=()=>{closePop();if(curAct&&isPadAct(curAct))openPad(curAct);else if(camOn()&&curAct)openCam(curAct)};$("popX").onclick=closePop;
 $("popNext").onclick=()=>{closePop();spin()};
 $("pop").onclick=e=>{if(e.target===$("pop"))closePop()};
 document.addEventListener("keydown",e=>{if(e.key==="Escape")closePop()});
 
-const G=$("arena"),GN=["🧩 Memory","🔴 Pattern","🔤 Words","➕ Quick math","🧠 Trivia","🎲 Surprise me","📅 Daily word","🕵️ Mystery","🔢 Number rush","🖼️ Picture puzzle"];
+const G=$("arena"),GN=["🧩 Memory","🔴 Pattern","🔤 Words","➕ Quick math","🧠 Trivia","🎲 Surprise me","📅 Daily word","🕵️ Mystery","🔢 Number rush","🖼️ Picture puzzle","✏️ Drawing pad"];
 let gsel=-1,lvl=1,gtoken=0,topic=0;const bestMoves=S.best.mem||[0,0,0];
 function run(){gtoken++;$("gt").hidden=gsel!==4||band()===0;const F=[mem,pat,wrd,mth,tri,0,daily,mys,rush,puzzle];F[gsel===5?surp():gsel]()}
 const LVL=[[0,"🟢 Easy"],[1,"🟡 Medium"],[2,"🔴 Hard"]];
@@ -440,7 +449,7 @@ function pickLevel(){
     $("lv").appendChild(b);
   });
 }
-function gChips(){chips($("gtabs"),GN.map((n,i)=>[i,n]).filter(([i])=>gOK().includes(i)),()=>gsel,k=>{gsel=k;$("gtitle").textContent=GN[k];location.hash="#play";pickLevel()})}
+function gChips(){chips($("gtabs"),gOK().map(i=>[i,GN[i]]),()=>gsel,k=>{if(k===10){openPad(null);return}gsel=k;$("gtitle").textContent=GN[k];location.hash="#play";pickLevel()})}
 gChips();
 chips($("gt"),[[0,"🌍 Mixed"],[1,"🇵🇭 Filipino"],[2,"🔬 Science"],[3,"🍜 Food & music"]],()=>topic,k=>{topic=k;if(gsel===4&&!$("gl").hidden)run()});
 
@@ -757,7 +766,7 @@ $("share").onclick=async()=>{
   }catch(e){if(e.name!=="AbortError")$("share").textContent="Copy the link from your browser bar"}
 };
 function band(){return S.age&&S.age>=16?2:S.age&&S.age>=9?1:0}
-function gOK(){return band()===0?[0,1,3,4,5,8,9]:[0,1,2,3,4,5,6,7,8,9]}
+function gOK(){return band()===0?[0,9,4,3,1,8,10]:[6,7,0,9,4,3,1,8,10]}
 function lvOK(){return band()===1?[0,1]:[0,1,2]}
 function AL(){return band()===0?KA:A}
 function surp(){const l=gOK().filter(g=>g!==5&&g!==6);return l[Math.floor(Math.random()*l.length)]}
@@ -826,11 +835,6 @@ function pickPhoto(a,m){
 }
 function addMoment(r,a){
   const acts=r.querySelector(".acts");if(!acts)return;
-  const b=document.createElement("button");b.className="pill";b.textContent="📸 Take a picture";
-  const m=document.createElement("p");m.setAttribute("role","status");m.style.margin="10px 0 0";m.style.fontSize=".85rem";
-  m.textContent=band()===0?"Ask a grown-up to help. Take a picture of what you made. Pictures stay on this device.":"Pictures stay on this device only.";
-  b.onclick=()=>openCam(a);
-  acts.appendChild(b);acts.after(m);
   if(isPadAct(a)){const p=document.createElement("button");p.className="pill";p.textContent="✏️ Drawing pad";p.onclick=()=>openPad(a);acts.appendChild(p)}
 }
 function moments(){
@@ -874,8 +878,9 @@ $("camShot").onclick=()=>{
 };
 $("camSkip").onclick=stopCam;
 $("camFlip").onclick=()=>{camFace=camFace==="environment"?"user":"environment";startCam()};
-function camLabel(){$("camBtn").textContent=S.cam===false?"📸 Camera after activities: off":"📸 Camera after activities: on"}
-$("camBtn").onclick=()=>{S.cam=(S.cam===false);save();camLabel()};
+function camOn(){return S.cam===undefined?band()>0:S.cam}
+function camLabel(){$("camBtn").textContent=camOn()?"📸 Camera after activities: on":"📸 Camera after activities: off"}
+$("camBtn").onclick=()=>{S.cam=!camOn();save();camLabel()};
 camLabel();
 function scene(n){
   const c=document.createElement("canvas");c.width=c.height=600;const x=c.getContext("2d");
@@ -980,14 +985,13 @@ function buildTools(){
   ["pointerup","pointercancel"].forEach(t=>c.addEventListener(t,()=>{d=false}));
 })();
 $("padX").onclick=closePad;
-$("padBtn").onclick=()=>openPad(null);
 function askAge(){$("age").hidden=false;$("ageIn").value=S.age||"";$("ageMsg").textContent="";$("ageIn").focus()}
 function applyAge(){
   lvl=Math.min(lvl,Math.max(...lvOK()));gsel=-1;last=-1;gtoken++;
   lvChips();gChips();
   $("gl").hidden=true;$("gt").hidden=true;
   G.innerHTML="<p>Pick a game above to start playing.</p>";
-  $("ageBtn").textContent="🎂 Age: "+S.age+" · change";
+  $("ageBtn").textContent="🎂 Age: "+S.age+" · change";camLabel();
   if(!$("result").querySelector(".act"))return;
 }
 $("ageGo").onclick=()=>{
@@ -997,7 +1001,16 @@ $("ageGo").onclick=()=>{
   S.age=v;save();$("age").hidden=true;applyAge();
 };
 $("ageIn").onkeydown=e=>{if(e.key==="Enter")$("ageGo").click()};
-$("ageBtn").onclick=askAge;
+$("ageBtn").onclick=()=>{$("set").hidden=true;askAge()};
+$("gearBtn").onclick=()=>{$("set").hidden=false};
+$("setX").onclick=()=>{$("set").hidden=true};
+$("set").onclick=e=>{if(e.target===$("set"))$("set").hidden=true};
+let rsArm=false;
+$("resetBtn").onclick=()=>{
+  if(!rsArm){rsArm=true;$("resetBtn").textContent="Tap again to erase everything";setTimeout(()=>{rsArm=false;$("resetBtn").textContent="🗑 Reset my progress"},4000);return}
+  try{localStorage.removeItem(KEY);localStorage.removeItem("bbMoments")}catch(e){}
+  location.hash="";location.reload();
+};
 $("gexit").onclick=()=>{history.back();setTimeout(()=>{if(location.hash==="#play")location.replace("#games")},300)};
 if(!S.age)askAge();else applyAge();
 function track(p){
