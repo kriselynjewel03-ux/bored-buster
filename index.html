@@ -71,6 +71,15 @@ h2{font-size:1rem;margin:0 0 8px}
 .gear:focus-visible{outline:3px solid #fff;border-radius:999px}
 details.ans summary{font-weight:700;cursor:pointer;padding:4px 0}
 details.ans[open] summary{margin-bottom:8px}
+.chalbar{display:block;text-decoration:none;color:#fff;background:rgba(255,255,255,.18);border-radius:16px;padding:12px 14px;margin:0 0 18px;font-weight:700}
+.chalbar:focus-visible{outline:3px solid #fff;outline-offset:2px}
+#toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:#2a1a8a;color:#fff;padding:12px 20px;border-radius:999px;font-weight:700;z-index:60;box-shadow:0 6px 0 rgba(0,0,0,.25);max-width:90vw;text-align:center}
+.bdg{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.bd{text-align:center;opacity:.5}.bd.on{opacity:1}
+.bi{font-size:1.9rem;line-height:1.2}
+.bd b{display:block;font-size:.8rem}
+.bd small{display:block;font-size:.7rem;color:var(--cmute)}
+.breath{width:180px;height:180px;border-radius:50%;background:var(--acc);margin:28px auto;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:1.1rem;text-align:center;transition-property:transform;transition-timing-function:ease-in-out}
 .sk{display:grid;grid-template-columns:112px 1fr 44px;gap:8px;align-items:center;margin:10px 0}
 .bar{background:rgba(128,128,128,.25);border-radius:99px;height:12px;overflow:hidden}
 .bar i{display:block;height:100%;background:var(--acc);border-radius:99px}
@@ -119,6 +128,11 @@ details.ans[open] summary{margin-bottom:8px}
 @media (prefers-reduced-motion:reduce){.big,.card.pop{animation:none}.chip,.big{transition:none}}
 </style>
 <script data-goatcounter="https://boredbuster.goatcounter.com/count" data-goatcounter-settings='{"no_onload":true}' async src="//gc.zgo.at/count.js"></script>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="theme-color" content="#3a1fd1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 </head>
 <body>
 <main>
@@ -126,6 +140,7 @@ details.ans[open] summary{margin-bottom:8px}
 <div id="home">
 <h1>Bored Buster <span>⚡</span></h1>
 <p class="sub">Tell us how you feel and how long you have. We’ll pick something.</p>
+<a class="chalbar" id="chal" href="#games"></a>
 
 <h2>How are you feeling?</h2>
 <div class="row" id="moods"></div>
@@ -156,10 +171,13 @@ details.ans[open] summary{margin-bottom:8px}
 <section id="brainView" hidden>
 <h2>🧠 Your brain profile</h2>
 <div class="arena" id="brainBox"></div>
+<h2 style="margin-top:22px">🏅 Badges</h2>
+<div class="arena" id="badgeBox"></div>
 <h2 style="margin-top:22px">📸 My moments</h2>
 <div class="arena" id="momBox"></div>
 </section>
 </main>
+<div id="toast" role="status" hidden></div>
 <div class="popwrap" id="pop" hidden>
 <div class="popcard" role="dialog" aria-modal="true" aria-labelledby="popT">
 <button class="popx" id="popX" aria-label="Close">✕</button>
@@ -175,6 +193,8 @@ details.ans[open] summary{margin-bottom:8px}
 <button class="popx" id="setX" aria-label="Close">✕</button>
 <h2 id="setT">⚙️ Settings</h2>
 <div class="acts" style="flex-direction:column;align-items:stretch">
+<button class="pill" id="instBtn">📲 Install on my phone</button>
+<p class="popcat" id="instMsg" style="margin:0"></p>
 <button class="pill" id="ageBtn">🎂 Age</button>
 <button class="pill" id="camBtn">📸 Camera</button>
 <button class="pill" id="share">📤 Share with a friend</button>
@@ -311,14 +331,20 @@ const EMO={"Brain game":"🧠","Memory game":"🧩","Would you rather":"🤔","C
 const CATS=Object.keys(EMO);
 const LEVELS=[[0,"Rookie"],[100,"Fun finder"],[300,"Boredom buster"],[700,"Legend"]];
 const KEY="boredBusterV1";
-let S={streak:0,last:"",points:0,best:{},saved:[],skill:{},cases:[]};
+let S={streak:0,last:"",points:0,best:{},saved:[],skill:{},cases:[],n:{},badges:[],ch:{},bestStreak:0,chDone:0};
 try{const r=JSON.parse(localStorage.getItem(KEY)||"null");if(r&&typeof r==="object")S=Object.assign(S,r)}catch(e){}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 const dayStr=d=>d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();
 function award(pts,skill){
   const t=dayStr(new Date());
   if(S.last!==t){const y=new Date();y.setDate(y.getDate()-1);S.streak=S.last===dayStr(y)?S.streak+1:1;S.last=t}
-  S.points+=pts;if(skill){S.skill=S.skill||{};S.skill[skill]=(S.skill[skill]||0)+pts}save();stat();
+  S.points+=pts;S.bestStreak=Math.max(S.bestStreak||0,S.streak);
+  if(skill){
+    S.skill=S.skill||{};S.skill[skill]=(S.skill[skill]||0)+pts;
+    S.n=S.n||{};S.n[skill]=(S.n[skill]||0)+1;
+    if(todayCh().s===skill&&!(S.ch&&S.ch.d===t&&S.ch.done)){S.ch={d:t,done:true};S.chDone=(S.chDone||0)+1;S.points+=20;toast("⭐ Today’s challenge done! +20 points")}
+  }
+  checkBadges();save();stat();chalUI();
 }
 let mood="b",time=15,last=-1,done=0,busy=false;const saved=Array.isArray(S.saved)?S.saved.slice():[],seen=new Set();
 const $=id=>document.getElementById(id);
@@ -427,9 +453,9 @@ $("popNext").onclick=()=>{closePop();spin()};
 $("pop").onclick=e=>{if(e.target===$("pop"))closePop()};
 document.addEventListener("keydown",e=>{if(e.key==="Escape")closePop()});
 
-const G=$("arena"),GN=["🧩 Memory","🔴 Pattern","🔤 Words","➕ Quick math","🧠 Trivia","🎲 Surprise me","📅 Daily word","🕵️ Mystery","🔢 Number rush","🖼️ Picture puzzle","✏️ Drawing pad"];
+const G=$("arena"),GN=["🧩 Memory","🔴 Pattern","🔤 Words","➕ Quick math","🧠 Trivia","🎲 Surprise me","📅 Daily word","🕵️ Mystery","🔢 Number rush","🖼️ Picture puzzle","✏️ Drawing pad","🌬️ Calm corner"];
 let gsel=-1,lvl=1,gtoken=0,topic=0;const bestMoves=S.best.mem||[0,0,0];
-function run(){gtoken++;$("gt").hidden=gsel!==4||band()===0;const F=[mem,pat,wrd,mth,tri,0,daily,mys,rush,puzzle];F[gsel===5?surp():gsel]()}
+function run(){gtoken++;$("gt").hidden=gsel!==4||band()===0;const F=[mem,pat,wrd,mth,tri,0,daily,mys,rush,puzzle,0,calmGame];F[gsel===5?surp():gsel]()}
 const LVL=[[0,"🟢 Easy"],[1,"🟡 Medium"],[2,"🔴 Hard"]];
 function lvChips(){chips($("gl"),LVL.filter(([k])=>lvOK().includes(k)),()=>lvl,k=>{lvl=k;run()})}
 lvChips();
@@ -594,7 +620,7 @@ const TP=[[
 ["What is the main ingredient of hummus?","Chickpeas",["Lentils","Black beans","Potatoes"],1],["Which spice comes from the crocus flower?","Saffron",["Turmeric","Cinnamon","Paprika"],1],["Which Korean dish is made of fermented cabbage?","Kimchi",["Bibimbap","Bulgogi","Tteokbokki"],1],["Which group sang Dancing Queen?","ABBA",["Queen","Bee Gees","Boney M."],1],["How many keys does a standard piano have?","88",["76","92","100"],1],["Which country is the home of the tango?","Argentina",["Spain","Brazil","Mexico"],1],
 ["Which Italian city is known for balsamic vinegar?","Modena",["Naples","Florence","Bologna"],2],["What is traditional miso made from?","Fermented soybeans",["Rice flour","Seaweed","Fish"],2],["Who composed The Four Seasons?","Antonio Vivaldi",["Johann Sebastian Bach","Wolfgang Amadeus Mozart","Ludwig van Beethoven"],2],["How many beats does a whole note last in 4/4 time?","4",["2","3","8"],2],["Which Italian dessert's name means pick me up?","Tiramisu",["Panna cotta","Cannoli","Gelato"],2],["Which French cooking term means everything in its place?","Mise en place",["Sous vide","Au gratin","Bain-marie"],2]
 ]];
-const SK={memory:"🧩 Memory",focus:"🎯 Focus",words:"🔤 Words",math:"➕ Math",knowledge:"🧠 Knowledge",logic:"🕵️ Logic"};
+const SK={memory:"🧩 Memory",focus:"🎯 Focus",words:"🔤 Words",math:"➕ Math",knowledge:"🧠 Knowledge",logic:"🕵️ Logic",calm:"🌬️ Calm"};
 function brain(){
   const box=$("brainBox"),sk=S.skill||{},ent=Object.entries(SK);
   const y=new Date();y.setDate(y.getDate()-1);
@@ -766,7 +792,7 @@ $("share").onclick=async()=>{
   }catch(e){if(e.name!=="AbortError")$("share").textContent="Copy the link from your browser bar"}
 };
 function band(){return S.age&&S.age>=16?2:S.age&&S.age>=9?1:0}
-function gOK(){return band()===0?[0,9,4,3,1,8,10]:[6,7,0,9,4,3,1,8,10]}
+function gOK(){return band()===0?[0,9,4,3,1,8,10,11]:[6,7,0,9,4,3,1,8,10,11]}
 function lvOK(){return band()===1?[0,1]:[0,1,2]}
 function AL(){return band()===0?KA:A}
 function surp(){const l=gOK().filter(g=>g!==5&&g!==6);return l[Math.floor(Math.random()*l.length)]}
@@ -814,7 +840,7 @@ function loadMoments(){try{return JSON.parse(localStorage.getItem("bbMoments")||
 function saveMoment(x,m){
   const L=loadMoments();L.unshift(x);
   while(L.length>12)L.pop();
-  try{localStorage.setItem("bbMoments",JSON.stringify(L));m.textContent="Saved! Find it in 🧠 My brain, under My moments. 📸";award(5)}
+  try{localStorage.setItem("bbMoments",JSON.stringify(L));m.textContent="Saved! Find it in 🧠 My brain, under My moments. 📸";S.n=S.n||{};S.n.art=(S.n.art||0)+1;award(5)}
   catch(e){m.textContent="There is no room left. Please delete an old moment first."}
 }
 function pickPhoto(a,m){
@@ -985,6 +1011,82 @@ function buildTools(){
   ["pointerup","pointercancel"].forEach(t=>c.addEventListener(t,()=>{d=false}));
 })();
 $("padX").onclick=closePad;
+const BADGES=[
+["first","⭐","First steps","Earn 10 points",()=>S.points>=10],
+["s3","🔥","3-day streak","Play 3 days in a row",()=>(S.bestStreak||0)>=3],
+["s7","🏆","7-day streak","Play 7 days in a row",()=>(S.bestStreak||0)>=7],
+["mem","🧩","Memory Star","Win 5 Memory games",()=>nn("memory")>=5],
+["quiz","🧠","Quiz Whiz","Finish 5 Trivia rounds",()=>nn("knowledge")>=5],
+["det","🕵️","Detective","Solve 3 puzzles or cases",()=>nn("logic")>=3],
+["word","🔤","Word Wizard","Solve 3 daily words",()=>nn("words")>=3],
+["math","➕","Math Master","Finish 5 Quick math rounds",()=>nn("math")>=5],
+["focus","🎯","Laser Focus","Play 5 focus games",()=>nn("focus")>=5],
+["art","🎨","Little Artist","Save 1 drawing or picture",()=>nn("art")>=1],
+["calm","🌬️","Calm Mind","Finish 3 calm breathing sessions",()=>nn("calm")>=3],
+["champ","🌟","Challenge Champ","Finish 3 daily challenges",()=>(S.chDone||0)>=3]
+];
+function nn(k){return (S.n&&S.n[k])||0}
+function toast(t){const el=$("toast");el.textContent=t;el.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>{el.hidden=true},3500)}
+function checkBadges(){
+  S.badges=S.badges||[];
+  BADGES.forEach(([id,e,n,d,f])=>{if(!S.badges.includes(id)&&f()){S.badges.push(id);toast("🏅 New badge: "+n)}});
+}
+function badges(){
+  const box=$("badgeBox"),got=S.badges||[];
+  box.innerHTML="";
+  const p=document.createElement("p");p.textContent=got.length+" of "+BADGES.length+" earned";box.appendChild(p);
+  const g=document.createElement("div");g.className="bdg";
+  BADGES.forEach(([id,e,n,d])=>{
+    const on=got.includes(id),f=document.createElement("div");f.className="bd"+(on?" on":"");
+    const i=document.createElement("div");i.className="bi";i.textContent=on?e:"🔒";
+    const t=document.createElement("b");t.textContent=n;
+    const sm=document.createElement("small");sm.textContent=d;
+    f.append(i,t,sm);g.appendChild(f);
+  });
+  box.appendChild(g);
+}
+function todayCh(){
+  const d=new Date(),n=Math.floor(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/864e5);
+  const L=[["memory","Play Memory match"],["focus","Play Pattern recall or Number rush"],["knowledge","Play Trivia"],["math","Play Quick math"],["logic",band()>0?"Solve a Picture puzzle or a Mystery case":"Solve a Picture puzzle"]];
+  if(band()>0)L.push(["words","Solve the Daily word"]);
+  const c=L[n%L.length];return{s:c[0],t:c[1]};
+}
+function chalUI(){
+  const el=$("chal"),c=todayCh(),done=S.ch&&S.ch.d===dayStr(new Date())&&S.ch.done;
+  el.textContent=done?"✅ Today’s challenge done: "+c.t:"⭐ Today’s challenge: "+c.t+" (+20 points)";
+}
+function calmGame(){
+  const my=gtoken,R=5;let n=0;
+  G.innerHTML='<p><b>🌬️ Calm corner</b></p><p>Sit comfortably. Breathe in while the circle grows, and out while it shrinks. We will do 5 slow breaths.</p><div class="breath" id="br">Ready?</div><p id="bm" style="text-align:center;min-height:1.4em"></p><button class="pill main" id="bs">Start</button>';
+  const el=$("br");
+  $("bs").onclick=()=>{
+    $("bs").disabled=true;n=0;
+    const cyc=()=>{
+      if(my!==gtoken||!el.isConnected)return;
+      if(n>=R){
+        el.style.transform="scale(1)";el.textContent="Well done 💛";$("bm").textContent="5 slow breaths. Nice and calm.";
+        confetti();award(10,"calm");$("bs").disabled=false;$("bs").textContent="Again";return;
+      }
+      n++;$("bm").textContent="Breath "+n+" of "+R;el.textContent="Breathe in…";
+      if(!calm()){el.style.transitionDuration="4s";el.style.transform="scale(1.6)"}
+      setTimeout(()=>{
+        if(my!==gtoken)return;
+        el.textContent="Breathe out…";
+        if(!calm()){el.style.transitionDuration="6s";el.style.transform="scale(1)"}
+        setTimeout(cyc,6000);
+      },4000);
+    };
+    cyc();
+  };
+}
+let instEv=null;
+addEventListener("beforeinstallprompt",e=>{e.preventDefault();instEv=e});
+if(matchMedia("(display-mode: standalone)").matches)$("instBtn").hidden=true;
+$("instBtn").onclick=()=>{
+  if(instEv){instEv.prompt();instEv=null;return}
+  $("instMsg").textContent="iPhone: tap the Share button, then Add to Home Screen. Android: open the browser menu (three dots), then Install app or Add to Home screen.";
+};
+if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js").catch(()=>{});
 function askAge(){$("age").hidden=false;$("ageIn").value=S.age||"";$("ageMsg").textContent="";$("ageIn").focus()}
 function applyAge(){
   lvl=Math.min(lvl,Math.max(...lvOK()));gsel=-1;last=-1;gtoken++;
@@ -1028,7 +1130,7 @@ function route(){
   const b=location.hash==="#brain";
   $("home").hidden=g||b;$("gamesView").hidden=!g;$("brainView").hidden=!b;
   [["tabH",!g&&!b],["tabG",g],["tabB",b]].forEach(([id,on])=>$(id).setAttribute("aria-current",on?"page":"false"));
-  stat();renderSaved();if(b){brain();moments()}
+  stat();renderSaved();chalUI();if(b){brain();badges();moments()}
   if(!pl&&gsel>=0){gtoken++;gsel=-1;gChips();G.innerHTML="<p>Pick a game above to start playing.</p>";$("gt").hidden=true;$("gl").hidden=true;$("gtabs").querySelectorAll(".chip").forEach(c=>c.setAttribute("aria-pressed","false"))}
   $("gfull").hidden=!pl;document.body.style.overflow=pl?"hidden":"";
   window.scrollTo(0,0);
