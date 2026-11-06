@@ -1,0 +1,1174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bored Buster</title>
+<style>
+:root{--g1:#3a1fd1;--g2:#e0338f;--ink:#ffffff;--card:#ffffff;--cink:#1f1b3a;--cmute:#6b6690;--sun:#ffd23f;--sunink:#2a1d00;--chip:rgba(255,255,255,.16);--chipline:rgba(255,255,255,.35);--acc:#3a1fd1;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--g1:#1b1052;--g2:#6b1651;--card:#241d4a;--cink:#f4f1ff;--cmute:#b2add8}}
+:root[data-theme="dark"]{--g1:#1b1052;--g2:#6b1651;--card:#241d4a;--cink:#f4f1ff;--cmute:#b2add8}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px);min-height:100%;background:var(--g1)}
+body{margin:0;min-height:100vh;color:var(--ink);background:linear-gradient(160deg,var(--g1),var(--g2));background-attachment:fixed;font-family:"Trebuchet MS","Segoe UI",system-ui,sans-serif;line-height:1.5;overflow-x:hidden}
+main{max-width:480px;margin:0 auto;padding:24px 20px 100px}
+h1{font-family:"Georgia","Times New Roman",serif;font-size:2.6rem;line-height:1.05;margin:0 0 6px;letter-spacing:-1px;text-shadow:0 3px 0 rgba(0,0,0,.25)}
+h1 span{display:inline-block;transform:rotate(-8deg)}
+.sub{opacity:.9;margin:0 0 22px}
+h2{font-size:1rem;margin:0 0 8px}
+.row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
+.chip{border:2px solid var(--chipline);background:var(--chip);color:#fff;border-radius:999px;padding:9px 15px;font:inherit;font-weight:700;cursor:pointer;transition:transform .12s}
+.chip:active{transform:scale(.93)}
+.chip[aria-pressed="true"]{background:#fff;color:#2a1a8a;border-color:#fff;transform:scale(1.06);box-shadow:0 4px 0 rgba(0,0,0,.25)}
+.chip:focus-visible,.big:focus-visible,.pill:focus-visible{outline:3px solid #fff;outline-offset:3px}
+.big{display:block;width:100%;border:0;border-radius:32px;background:var(--sun);color:var(--sunink);font:700 1.7rem Georgia,serif;padding:38px 16px;cursor:pointer;box-shadow:0 8px 0 rgba(0,0,0,.3);margin:10px 0 26px;transition:transform .1s;animation:wiggle 4s ease-in-out infinite}
+.big:active,.big.spin{transform:translateY(6px);box-shadow:0 2px 0 rgba(0,0,0,.3);animation:none}
+@keyframes wiggle{0%,88%,100%{transform:none}91%{transform:rotate(-2deg) scale(1.03)}94%{transform:rotate(2deg) scale(1.03)}97%{transform:rotate(-1deg)}}
+.card{background:var(--card);color:var(--cink);border-radius:24px;overflow:hidden;box-shadow:0 10px 0 rgba(0,0,0,.25)}
+.card.pop{animation:pop .45s cubic-bezier(.2,1.6,.4,1)}
+@keyframes pop{from{transform:scale(.8) rotate(-3deg);opacity:.4}to{transform:none;opacity:1}}
+.banner{background:var(--acc);color:#fff;padding:12px 20px;display:flex;align-items:center;gap:10px;font-weight:700}
+.banner .emoji{font-size:1.8rem;line-height:1}
+.body{padding:18px 20px 20px}
+.emoji.big2{font-size:3rem;text-align:center;padding-top:14px}
+.act{font-size:1.35rem;font-weight:700;margin:0 0 16px;line-height:1.35}
+.acts{display:flex;gap:8px;flex-wrap:wrap}
+.pill{border:2px solid var(--acc);background:none;color:var(--acc);border-radius:999px;font:inherit;font-weight:700;padding:8px 14px;cursor:pointer}
+.pill.main{background:var(--acc);color:#fff}
+.pill:disabled{opacity:.7}
+:root:is([data-theme="dark"]) .pill{color:var(--cink)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .pill:not(.main){color:var(--cink)}}
+.stat{margin-top:22px;text-align:center;font-weight:700;font-size:1.05rem}
+.saved{margin-top:20px;background:rgba(255,255,255,.14);border-radius:18px;padding:14px 18px}
+.saved h2{margin:0 0 6px}
+.saved ul{margin:0;padding-left:20px}
+.saved li{margin:4px 0}
+.cf{position:fixed;top:-20px;width:10px;height:14px;border-radius:2px;pointer-events:none;z-index:50;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(115vh) rotate(720deg)}}
+.games{margin-top:30px}
+.arena{background:var(--card);color:var(--cink);border-radius:24px;padding:18px;box-shadow:0 10px 0 rgba(0,0,0,.25);min-height:110px}
+.arena p{margin:0 0 12px}
+.info{display:flex;justify-content:space-between;align-items:center;font-weight:700;margin-bottom:12px}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.mc{aspect-ratio:1;border:2px solid var(--acc);border-radius:14px;background:var(--acc);color:#fff;font-size:1.7rem;cursor:pointer}
+.mc.up{background:#fff;color:#000}
+.mc.ok{background:#c9f7d4;border-color:#1c9c4a;color:#000}
+.pads{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pad{height:90px;border:0;border-radius:18px;opacity:.5;cursor:pointer}
+.pad.lit{opacity:1;transform:scale(1.06);box-shadow:0 0 0 4px var(--cink)}
+.scr{font-size:2rem;letter-spacing:6px;text-align:center;font-weight:700;margin:6px 0 8px}
+.inp{width:100%;font:inherit;font-size:1.2rem;padding:10px 12px;border-radius:12px;border:2px solid var(--acc);background:transparent;color:var(--cink);text-align:center}
+.opt{display:block;width:100%;margin:0 0 8px;text-align:left}
+.pill.opt.good{background:#c9f7d4!important;color:#000!important;border-color:#1c9c4a}
+.pill.opt.bad{background:#ffd3d3!important;color:#000!important;border-color:#c62828}
+[hidden]{display:none!important}
+.tabs{display:flex;background:rgba(255,255,255,.2);border-radius:999px;padding:5px;margin:0 0 20px;position:sticky;top:env(safe-area-inset-top,0px);z-index:5;backdrop-filter:blur(8px)}
+.tabs a{flex:1;text-align:center;text-decoration:none;color:#fff;font-weight:700;padding:12px 8px;border-radius:999px}
+.tabs a[aria-current="page"]{background:#fff;color:#2a1a8a;box-shadow:0 3px 0 rgba(0,0,0,.22)}
+.tabs a:focus-visible{outline:3px solid #fff;outline-offset:2px}
+.tabs a{padding:12px 4px;font-size:.92rem}
+.gear{flex:none;border:0;background:none;color:#fff;font-size:1.25rem;padding:0 12px;cursor:pointer}
+.gear:focus-visible{outline:3px solid #fff;border-radius:999px}
+details.ans summary{font-weight:700;cursor:pointer;padding:4px 0}
+details.ans[open] summary{margin-bottom:8px}
+.chalbar{display:block;text-decoration:none;color:#fff;background:rgba(255,255,255,.18);border-radius:16px;padding:12px 14px;margin:0 0 18px;font-weight:700}
+.chalbar:focus-visible{outline:3px solid #fff;outline-offset:2px}
+#instBar{position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:22;background:#fff;color:#2a1a8a;border-radius:20px;padding:10px 12px;display:flex;align-items:center;gap:10px;box-shadow:0 6px 0 rgba(0,0,0,.25);font-weight:700;max-width:456px;margin:0 auto}
+#instBar span{flex:1;font-size:.9rem;line-height:1.3}
+#instBar .pill{background:#2a1a8a;color:#fff;border-color:#2a1a8a}
+#instBar .popx{position:static;color:#2a1a8a}
+.popcard ol{text-align:left;padding-left:22px;line-height:1.6;margin:0 0 16px}
+#toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:#2a1a8a;color:#fff;padding:12px 20px;border-radius:999px;font-weight:700;z-index:60;box-shadow:0 6px 0 rgba(0,0,0,.25);max-width:90vw;text-align:center}
+.bdg{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.bd{text-align:center;opacity:.5}.bd.on{opacity:1}
+.bi{font-size:1.9rem;line-height:1.2}
+.bd b{display:block;font-size:.8rem}
+.bd small{display:block;font-size:.7rem;color:var(--cmute)}
+.breath{width:180px;height:180px;border-radius:50%;background:var(--acc);margin:28px auto;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:1.1rem;text-align:center;transition-property:transform;transition-timing-function:ease-in-out}
+.sk{display:grid;grid-template-columns:112px 1fr 44px;gap:8px;align-items:center;margin:10px 0}
+.bar{background:rgba(128,128,128,.25);border-radius:99px;height:12px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--acc);border-radius:99px}
+.popwrap{position:fixed;inset:0;background:rgba(10,5,40,.6);display:flex;align-items:center;justify-content:center;padding:20px;z-index:30;animation:fadein .2s}
+.popcard{position:relative;background:var(--card);color:var(--cink);border-radius:28px;padding:28px 22px 22px;max-width:380px;width:100%;text-align:center;border-top:10px solid var(--acc);box-shadow:0 14px 0 rgba(0,0,0,.25);animation:burst .5s cubic-bezier(.2,1.7,.4,1)}
+.popcard h2{font-size:1.4rem;line-height:1.35;margin:0 0 18px}
+.popcard .acts{justify-content:center}
+.popemoji{font-size:3.4rem;line-height:1;animation:bounce 1s ease-in-out 2}
+.popcat{color:var(--cmute);margin:8px 0 4px}
+.popx{position:absolute;top:6px;right:8px;border:0;background:none;color:var(--cmute);font-size:1.3rem;padding:8px;cursor:pointer}
+@keyframes burst{from{transform:scale(.3) rotate(-8deg);opacity:0}to{transform:none;opacity:1}}
+@keyframes fadein{from{opacity:0}}
+.agewrap{position:fixed;inset:0;z-index:40;display:flex;align-items:center;justify-content:center;padding:20px;background:linear-gradient(160deg,var(--g1),var(--g2))}
+.agewrap .inp{margin:6px 0}
+.mom{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:10px}
+.mom img{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:14px;display:block}
+.mom figcaption{font-size:.8rem;color:var(--cmute);margin:4px 0 6px}
+.gfull{position:fixed;inset:0;z-index:25;overflow-y:auto;background:linear-gradient(160deg,var(--g1),var(--g2))}
+.gbar{position:sticky;top:0;z-index:2;display:flex;align-items:center;gap:12px;padding:calc(10px + env(safe-area-inset-top,0px)) 16px 10px;background:rgba(0,0,0,.28);backdrop-filter:blur(8px);color:#fff}
+.gbar b{font-size:1.05rem}
+#gexit,#padX{background:#fff;color:#2a1a8a;border-color:#fff}
+#pad{z-index:36}
+#padC{width:100%;height:52vh;background:#fff;border-radius:16px;touch-action:none;display:block;box-shadow:0 6px 0 rgba(0,0,0,.25)}
+.tools{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0;align-items:center}
+.sw{width:34px;height:34px;border-radius:50%;border:3px solid #fff;cursor:pointer;padding:0}
+.sw[aria-pressed="true"]{outline:3px solid #ffd23f;outline-offset:2px}
+.gwrap{max-width:520px;margin:0 auto;padding:16px 16px calc(36px + env(safe-area-inset-bottom,0px))}
+.gwrap .arena{min-height:calc(100vh - 190px)}
+#gtabs{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+#gtabs .chip{padding:24px 10px;font-size:1rem;border-radius:20px;text-align:center}
+.camwrap{position:fixed;inset:0;z-index:35;background:rgba(10,5,40,.75);display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto}
+#camV{width:100%;max-height:48vh;border-radius:16px;background:#000;object-fit:cover;margin:8px 0}
+.pz{display:grid;gap:3px;width:100%;margin:10px 0;border-radius:14px;overflow:hidden}
+.pzt{border:0;padding:0;min-height:0;color:#fff;font:700 1.2rem "Trebuchet MS",system-ui,sans-serif;text-shadow:0 1px 3px #000;cursor:pointer;background-image:var(--img)}
+@keyframes bounce{50%{transform:translateY(-10px) scale(1.1)}}
+@media (prefers-reduced-motion:reduce){.popwrap,.popcard,.popemoji{animation:none}}
+.gobtn{display:block;text-align:center;text-decoration:none;background:#fff;color:#2a1a8a;font:700 1.25rem Georgia,serif;border-radius:24px;padding:22px 16px;margin-top:26px;box-shadow:0 8px 0 rgba(0,0,0,.28)}
+.gobtn small{display:block;font:400 .9rem "Trebuchet MS",system-ui,sans-serif;opacity:.8;margin-top:2px}
+.gobtn:active{transform:translateY(5px);box-shadow:0 3px 0 rgba(0,0,0,.28)}
+.gobtn:focus-visible,.back:focus-visible{outline:3px solid #fff;outline-offset:3px}
+.back{display:inline-block;color:#fff;font-weight:700;margin-bottom:14px;padding:6px 0}
+.ans{margin-top:18px;border-top:2px solid rgba(128,128,128,.3);padding-top:14px}
+.ans label{display:block;font-weight:700;margin-bottom:6px}
+.ans textarea{width:100%;font:inherit;border:2px solid var(--acc);border-radius:12px;padding:10px;background:transparent;color:var(--cink);margin-bottom:10px;resize:vertical}
+.ans small{display:block;margin-top:10px;color:var(--cmute)}
+@media (prefers-reduced-motion:reduce){.big,.card.pop{animation:none}.chip,.big{transition:none}}
+</style>
+<script data-goatcounter="https://boredbuster.goatcounter.com/count" data-goatcounter-settings='{"no_onload":true}' async src="//gc.zgo.at/count.js"></script>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="theme-color" content="#3a1fd1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+</head>
+<body>
+<main>
+<nav class="tabs" aria-label="Sections"><a href="#home" id="tabH" aria-current="page">✨ Activities</a><a href="#games" id="tabG">🎮 Games</a><a href="#brain" id="tabB">🧠 My brain</a><button class="gear" id="gearBtn" aria-label="Settings">⚙️</button></nav>
+<div id="home">
+<h1>Bored Buster <span>⚡</span></h1>
+<p class="sub">Tell us how you feel and how long you have. We’ll pick something.</p>
+<a class="chalbar" id="chal" href="#games"></a>
+
+<h2>How are you feeling?</h2>
+<div class="row" id="moods"></div>
+<h2>How much time do you have?</h2>
+<div class="row" id="times"></div>
+
+<button class="big" id="go">Bust my boredom 💥</button>
+
+<section class="card" id="result" aria-live="polite"><div class="emoji big2">🎲</div><div class="body"><p class="act">Press the big yellow button to get started.</p></div></section>
+
+<p class="stat" id="stat"></p>
+<div id="saved"></div>
+</div>
+
+<section class="games" id="gamesView" hidden>
+<h2>🎮 Brain games</h2>
+<p style="margin:0 0 12px;opacity:.9">Tap a game to play it full screen.</p>
+<div class="row" id="gtabs"></div>
+</section>
+<div class="gfull" id="gfull" hidden>
+<div class="gbar"><button class="pill" id="gexit">← Exit</button><b id="gtitle"></b></div>
+<div class="gwrap">
+<div class="row" id="gl" hidden></div>
+<div class="row" id="gt" hidden></div>
+<div class="arena" id="arena"><p>Pick a game.</p></div>
+</div>
+</div>
+<section id="brainView" hidden>
+<h2>🧠 Your brain profile</h2>
+<div class="arena" id="brainBox"></div>
+<h2 style="margin-top:22px">🏅 Badges</h2>
+<div class="arena" id="badgeBox"></div>
+<h2 style="margin-top:22px">📸 My moments</h2>
+<div class="arena" id="momBox"></div>
+</section>
+</main>
+<div id="toast" role="status" hidden></div>
+<div class="popwrap" id="pop" hidden>
+<div class="popcard" role="dialog" aria-modal="true" aria-labelledby="popT">
+<button class="popx" id="popX" aria-label="Close">✕</button>
+<div class="popemoji" id="popE"></div>
+<p class="popcat" id="popC"></p>
+<h2 id="popT"></h2>
+<div class="acts"><button class="pill main" id="popGo">Let’s do it! 🎉</button><button class="pill" id="popNext">Another 🎲</button></div>
+<p class="popcat" id="popN"></p>
+</div>
+</div>
+<div id="instBar" hidden role="region" aria-label="Install the app"><span>📲 Add Bored Buster to your phone</span><button class="pill" id="instGo">Install</button><button class="popx" id="instX" aria-label="Hide this">✕</button></div>
+<div class="popwrap" id="inst" hidden>
+<div class="popcard" role="dialog" aria-modal="true" aria-labelledby="instT">
+<div class="popemoji">📲</div>
+<h2 id="instT">Install Bored Buster</h2>
+<ol id="instSteps"></ol>
+<button class="pill main" id="instOk">Got it</button>
+</div>
+</div>
+<div class="popwrap" id="set" hidden>
+<div class="popcard" role="dialog" aria-modal="true" aria-labelledby="setT">
+<button class="popx" id="setX" aria-label="Close">✕</button>
+<h2 id="setT">⚙️ Settings</h2>
+<div class="acts" style="flex-direction:column;align-items:stretch">
+<button class="pill" id="instBtn">📲 Install on my phone</button>
+<p class="popcat" id="instMsg" style="margin:0"></p>
+<button class="pill" id="ageBtn">🎂 Age</button>
+<button class="pill" id="camBtn">📸 Camera</button>
+<button class="pill" id="share">📤 Share with a friend</button>
+<button class="pill" id="resetBtn">🗑 Reset my progress</button>
+</div>
+<p class="popcat" style="margin-top:14px">Visits are counted anonymously. Progress and pictures stay on this device. Answers are only collected from people aged 16 and over, if they choose to send them.</p>
+</div>
+</div>
+<div class="gfull" id="pad" hidden>
+<div class="gbar"><button class="pill" id="padX">✕ Close</button><b id="padT" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></b></div>
+<div class="gwrap">
+<canvas id="padC" aria-label="Drawing area"></canvas>
+<div class="tools" id="padTools"></div>
+<p id="padMsg" role="status" style="min-height:1.4em"></p>
+</div>
+</div>
+<div class="camwrap" id="cam" hidden>
+<div class="popcard" role="dialog" aria-modal="true" aria-labelledby="camT">
+<p class="popcat">Do your activity, then take a picture! 📸</p>
+<h2 id="camT" style="font-size:1.15rem;margin-bottom:6px"></h2>
+<video id="camV" autoplay playsinline muted></video>
+<p class="popcat" id="camMsg" role="status" style="min-height:1.4em"></p>
+<div class="acts"><button class="pill main" id="camShot">📸 Take picture</button><button class="pill" id="camFlip">🔄 Flip</button><button class="pill" id="camSkip">Skip</button></div>
+<p class="popcat" id="camHint"></p>
+</div>
+</div>
+<div class="agewrap" id="age" hidden>
+<div class="popcard" role="dialog" aria-modal="true" aria-labelledby="ageT">
+<div class="popemoji">🎂</div>
+<h2 id="ageT">How old are you?</h2>
+<p class="popcat">We use your age to pick games that fit you. It stays on your device.</p>
+<input class="inp" id="ageIn" type="number" inputmode="numeric" min="5" max="120" aria-label="Your age" placeholder="Type your age">
+<p id="ageMsg" class="popcat" style="min-height:1.4em"></p>
+<button class="pill main" id="ageGo">Start! 🎉</button>
+<p class="popcat">Under 13? Please ask a grown-up to help you.</p>
+</div>
+</div>
+
+<script>
+const MOODS={b:"🥱 Bored",t:"😴 Tired",r:"⚡ Restless",s:"😢 Sad",a:"😰 Anxious",l:"🫂 Lonely",c:"🔍 Curious"};
+const TIMES=[5,15,30];
+// [text, moods, minutes, category]
+const A=[
+["Name 10 animals that start with the letter B.","rc",5,"Brain game"],
+["Solve this riddle: what has keys but can’t open locks? Now invent your own riddle.","c",5,"Brain game"],
+["Try to remember what you ate every day this week, in order.","tc",5,"Memory game"],
+["Pick any object near you and think of 15 different uses for it.","rc",5,"Brain game"],
+["Would you rather always be 10 minutes late or 20 minutes early? Explain why.","tlc",5,"Would you rather"],
+["Count backwards from 100 by 7s without a mistake.","rc",5,"Brain game"],
+["Describe your day as a movie title and write its tagline.","tlc",5,"Creative"],
+["Close your eyes and list every sound you can hear right now.","t",5,"Mindful"],
+["Do 5 minutes of gentle stretching: neck, shoulders, back, wrists.","tr",5,"Move"],
+["Take 10 slow breaths: in for 4 counts, hold for 4, out for 6.","tr",5,"Relax"],
+["Dance to one full song, as badly as you can.","r",5,"Move"],
+["Send a message to someone you haven’t talked to in a while.","l",5,"Connect"],
+["Write down 3 things that went well today.","tl",5,"Reflect"],
+["Look up one fact about a country you know nothing about.","c",5,"Learn"],
+["Learn how to say “thank you” and “good morning” in a new language.","c",5,"Learn"],
+["Doodle a funny face using only circles.","tr",5,"Creative"],
+["Tidy one small space: a drawer, a shelf or your bag.","r",5,"Reset"],
+["Make a tea or coffee slowly and enjoy it without your phone.","t",15,"Relax"],
+["Write a six-word story about your week.","tc",15,"Creative"],
+["Cook something using only 3 ingredients from your kitchen.","rc",15,"Creative"],
+["Take a 15-minute walk and notice 5 things you’ve never seen before.","r",15,"Move"],
+["Call a friend or family member just to say hello.","l",15,"Connect"],
+["Write a short letter to yourself one year from now.","tlc",15,"Reflect"],
+["Do a 10-minute workout: squats, push-ups, planks, repeat.","r",15,"Move"],
+["Learn a simple card trick or a magic trick from a tutorial.","c",15,"Learn"],
+["Draw your dream house from memory.","tc",15,"Creative"],
+["Make a playlist of 10 songs that match your mood right now.","tlr",15,"Music"],
+["Teach yourself to fold a paper crane or paper boat.","tc",15,"Learn"],
+["Plan an imaginary trip: where, with whom and what you’d eat.","tlc",15,"Imagine"],
+["Write down 5 small goals for the next month.","trc",15,"Reflect"],
+["Bake something simple like cookies or banana bread.","trl",30,"Creative"],
+["Watch a short documentary about something you know nothing about.","tc",30,"Learn"],
+["Go for a longer walk and call someone while you go.","rl",30,"Connect"],
+["Rearrange a corner of your room to make it feel new.","r",30,"Reset"],
+["Start a 30-minute puzzle, a crossword or a jigsaw.","tc",30,"Brain game"],
+["Write a short story about a stranger you saw today.","tc",30,"Creative"],
+["Do a full body stretch or yoga session with a free video.","tr",30,"Move"],
+["Look through old photos and send one to the person in it.","tl",30,"Connect"],
+["Put on a song that lifts your mood and sing along out loud.","s",5,"Music"],
+["Write down 3 things you are grateful for, even small ones.","s",5,"Reflect"],
+["Text someone who makes you smile and say hello.","s",5,"Connect"],
+["Watch a funny video you love and let yourself laugh.","s",15,"Relax"],
+["Cook or bake your favorite comfort food and enjoy it slowly.","s",30,"Creative"],
+["Go outside for a gentle walk and notice the sky.","s",30,"Move"],
+["Try box breathing: in for 4, hold 4, out for 4, hold 4. Repeat 5 times.","a",5,"Relax"],
+["Name 5 things you see, 4 you can touch, 3 you hear, 2 you smell and 1 you taste.","a",5,"Mindful"],
+["Write every worry on paper, then circle the one you can act on today.","a",15,"Reflect"],
+["Slowly stretch your neck, shoulders and hands for 10 minutes.","a",15,"Move"],
+["Make a calming playlist of 8 slow songs.","a",15,"Music"],
+["Take a slow 30-minute walk without your phone.","a",30,"Move"],
+["Tidy one small area, then sit and enjoy how calm it feels.","a",30,"Reset"],
+["Invent a new word, give it a meaning and use it in a sentence.","b",5,"Creative"],
+["Dance until your song ends, with no stopping.","b",5,"Move"],
+["Draw your room from memory, then compare it with the real thing.","b",15,"Creative"],
+["Learn a magic trick or a new card game from a video.","b",15,"Learn"],
+["Call a friend and play 20 questions.","b",15,"Connect"],
+["Take a 30-minute photo walk and capture 10 interesting things.","b",30,"Creative"],
+["Plan a small surprise for someone: a message, a meal or a tiny gift.","b",30,"Connect"],
+["Make a quick list of 5 people who make your life better.","sl",5,"Reflect"],
+["Look at a photo that makes you happy and remember that day.","s",5,"Reflect"],
+["Stretch your arms overhead, then slowly roll your shoulders 10 times.","ta",5,"Move"],
+["Hum or sing a slow song you know.","ta",5,"Music"],
+["Sit still and count 20 slow breaths.","ta",5,"Mindful"],
+["Send a voice message to someone you miss.","l",5,"Connect"],
+["Write a thank-you message to someone and send it.","ls",5,"Connect"],
+["Share one good memory with a friend in a message.","l",5,"Connect"],
+["Find one surprising fact about the ocean or space.","c",5,"Learn"],
+["Learn to say 5 words in a language you do not speak.","c",5,"Learn"],
+["Pick a food in your kitchen and look up where it comes from.","c",5,"Learn"],
+["Balance on one leg for 30 seconds on each side.","rb",5,"Move"],
+["Tell yourself a joke and try to make yourself laugh.","bs",5,"Relax"],
+["Rearrange 5 things on your desk or shelf to make it look better.","rb",5,"Reset"],
+["Close your eyes and picture your perfect weekend in detail.","t",5,"Imagine"],
+["Drink a glass of water slowly and stretch your legs.","tr",5,"Relax"],
+["Do 20 squats or 10 push-ups, then shake it out.","r",5,"Move"],
+["Write a postcard to yourself from a beach you would love to visit.","tb",5,"Creative"],
+["Make a smoothie or snack you have never tried before.","cb",15,"Creative"],
+["Write a short poem about your day.","sab",15,"Creative"],
+["Delete 20 photos you do not need from your phone.","rb",15,"Reset"],
+["Follow a guided meditation or breathing video.","ta",15,"Mindful"],
+["Call someone in your family and ask about their day.","ls",15,"Connect"],
+["Learn three new facts and write them down.","c",15,"Learn"],
+["Bake something and share it with a neighbor or friend.","sl",30,"Creative"],
+["Tidy one room with your favorite music playing.","rb",30,"Reset"],
+["Take a long, warm shower and rest afterwards.","ta",30,"Relax"],
+["Watch a tutorial and try a new craft or recipe.","cb",30,"Learn"],
+["Write a long message to a friend you have not talked to in a while.","ls",30,"Connect"],
+["Walk to a place near you that you have never visited.","rc",30,"Move"]
+];
+const EMO={"Brain game":"🧠","Memory game":"🧩","Would you rather":"🤔","Creative":"🎨","Mindful":"🧘","Move":"💃","Relax":"🫖","Connect":"💬","Reflect":"📝","Learn":"💡","Reset":"🧹","Music":"🎵","Imagine":"✈️"};
+const CATS=Object.keys(EMO);
+const LEVELS=[[0,"Rookie"],[100,"Fun finder"],[300,"Boredom buster"],[700,"Legend"]];
+const KEY="boredBusterV1";
+let S={streak:0,last:"",points:0,best:{},saved:[],skill:{},cases:[],n:{},badges:[],ch:{},bestStreak:0,chDone:0};
+try{const r=JSON.parse(localStorage.getItem(KEY)||"null");if(r&&typeof r==="object")S=Object.assign(S,r)}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+const dayStr=d=>d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();
+function award(pts,skill){
+  const t=dayStr(new Date());
+  if(S.last!==t){const y=new Date();y.setDate(y.getDate()-1);S.streak=S.last===dayStr(y)?S.streak+1:1;S.last=t}
+  S.points+=pts;S.bestStreak=Math.max(S.bestStreak||0,S.streak);
+  if(skill){
+    S.skill=S.skill||{};S.skill[skill]=(S.skill[skill]||0)+pts;
+    S.n=S.n||{};S.n[skill]=(S.n[skill]||0)+1;
+    if(todayCh().s===skill&&!(S.ch&&S.ch.d===t&&S.ch.done)){S.ch={d:t,done:true};S.chDone=(S.chDone||0)+1;S.points+=20;toast("⭐ Today’s challenge done! +20 points")}
+  }
+  checkBadges();save();stat();chalUI();
+}
+let mood="b",time=15,last=-1,done=0,busy=false;const saved=Array.isArray(S.saved)?S.saved.slice():[],seen=new Set();
+const $=id=>document.getElementById(id);
+const calm=()=>matchMedia("(prefers-reduced-motion:reduce)").matches;
+const FORM_URL="https://docs.google.com/forms/d/e/1FAIpQLSfrGbXINCO25zBaXib_cuDGKH04zqI6tfN-TG6Q-ZAFpFAQVg/formResponse";
+function chips(box,items,get,set){
+  box.innerHTML="";
+  items.forEach(([k,label])=>{
+    const b=document.createElement("button");
+    b.className="chip";b.textContent=label;
+    b.setAttribute("aria-pressed",String(get()===k));
+    b.onclick=()=>{set(k);chips(box,items,get,set)};
+    box.appendChild(b);
+  });
+}
+chips($("moods"),Object.entries(MOODS),()=>mood,k=>mood=k);
+chips($("times"),TIMES.map(t=>[t,"⏱ "+t+" min"]),()=>time,k=>time=k);
+function pick(){
+  const L=AL();
+  let all=L.map((a,i)=>({a,i})).filter(({a})=>a[1].includes(mood)&&a[2]<=time);
+  if(all.length<6)all=all.concat(L.map((a,i)=>({a,i})).filter(({a})=>!a[1].includes(mood)&&a[2]<=time).sort(()=>Math.random()-.5).slice(0,6-all.length));
+  if(!all.length)return null;
+  let pool=all.filter(({i})=>!seen.has(i));
+  if(!pool.length){all.forEach(({i})=>seen.delete(i));pool=all.filter(({i})=>i!==last);if(!pool.length)pool=all}
+  const p=pool[Math.floor(Math.random()*pool.length)];
+  seen.add(p.i);last=p.i;return p.a;
+}
+function confetti(){
+  if(calm())return;
+  for(let i=0;i<40;i++){
+    const s=document.createElement("i");s.className="cf";
+    s.style.left=Math.random()*100+"vw";
+    s.style.background="hsl("+Math.floor(Math.random()*360)+" 90% 60%)";
+    s.style.animationDuration=(1.3+Math.random()*1.3)+"s";
+    s.style.animationDelay=(Math.random()*.3)+"s";
+    document.body.appendChild(s);setTimeout(()=>s.remove(),3200);
+  }
+}
+function show(a){
+  const r=$("result");
+  r.classList.remove("pop");
+  if(!a){r.innerHTML='<div class="body"><p class="act">No match for that mood and time. Try a longer time.</p></div>';return}
+  r.style.setProperty("--acc","hsl("+(CATS.indexOf(a[3])*27+250)%360+" 70% 42%)");
+  r.innerHTML='<div class="banner"><span class="emoji"></span><span class="cat"></span></div><div class="body"><p class="act"></p><div class="acts"><button class="pill main" id="done">I did it! 🎉</button><button class="pill" id="save">♡ Save</button></div><details class="ans"><summary>💬 How did it go? (optional)</summary><textarea id="ansBox" maxlength="500" rows="3" placeholder="Write your answer here"></textarea><button class="pill" id="send">Send answer</button><small id="ansMsg">Your answer is sent privately to the app creator. Please don’t share names, phone numbers or other personal details.</small></details></div>';
+  r.querySelector(".emoji").textContent=EMO[a[3]]||"⚡";
+  r.querySelector(".cat").textContent=a[3]+" · about "+a[2]+" min";
+  r.querySelector(".act").textContent=a[0];
+  void r.offsetWidth;r.classList.add("pop");openPop(a);
+  if(S.age<16){const x=r.querySelector(".ans");if(x)x.remove()}
+  addMoment(r,a);
+  $("done").onclick=()=>{done++;award(5);confetti();$("done").textContent="Nice work! 🙌";$("done").disabled=true};
+  $("save").onclick=()=>{if(!saved.includes(a[0])){saved.push(a[0]);S.saved=saved;save();renderSaved()}$("save").textContent="♥ Saved"};
+  if($("send"))$("send").onclick=async()=>{
+    const v=$("ansBox").value.trim();
+    if(!v){$("ansMsg").textContent="Please write something first.";return}
+    const fd=new URLSearchParams();fd.append("entry.2084916072",a[0]);fd.append("entry.60325395",v);
+    $("send").disabled=true;
+    try{
+      await fetch(FORM_URL,{method:"POST",mode:"no-cors",body:fd});
+      $("ansMsg").textContent="Thank you! Your answer was sent. 💛";$("ansBox").value="";
+    }catch(e){$("send").disabled=false;$("ansMsg").textContent="Sorry, it could not be sent. Please try again later."}
+  };
+}
+function spin(){
+  if(busy)return;
+  const a=pick();
+  if(!a){show(null);return}
+  if(calm()){show(a);return}
+  busy=true;$("go").classList.add("spin");
+  const r=$("result");r.classList.remove("pop");
+  r.innerHTML='<div class="emoji big2">🎲</div><div class="body"><p class="act"></p></div>';
+  const t=r.querySelector(".act"),e=r.querySelector(".emoji");let n=0;
+  const iv=setInterval(()=>{
+    t.textContent=AL()[Math.floor(Math.random()*AL().length)][0];
+    e.textContent=EMO[CATS[Math.floor(Math.random()*CATS.length)]];
+    if(++n>=10){clearInterval(iv);busy=false;$("go").classList.remove("spin");show(a)}
+  },90);
+}
+function stat(){
+  const y=new Date();y.setDate(y.getDate()-1);
+  const alive=S.last===dayStr(new Date())||S.last===dayStr(y);
+  if(!S.points&&!alive){$("stat").textContent="";return}
+  let lv=LEVELS[0][1];LEVELS.forEach(([n,l])=>{if(S.points>=n)lv=l});
+  $("stat").textContent="🔥 "+(alive?S.streak:0)+"-day streak · ⭐ "+S.points+" points · "+lv;
+}
+function renderSaved(){
+  const s=$("saved");
+  if(!saved.length){s.className="";s.innerHTML="";return}
+  s.className="saved";s.innerHTML="<h2>♥ Saved for later</h2><ul></ul>";
+  saved.forEach(t=>{const li=document.createElement("li");li.textContent=t;s.querySelector("ul").appendChild(li)});
+}
+$("go").onclick=spin;
+
+function openPop(a){
+  const p=$("pop");
+  p.style.setProperty("--acc","hsl("+(CATS.indexOf(a[3])*27+250)%360+" 70% 42%)");
+  $("popE").textContent=EMO[a[3]]||"⚡";
+  $("popC").textContent=a[3]+" · about "+a[2]+" min";
+  $("popT").textContent=a[0];
+  $("popN").textContent=(mood==="s"||mood==="a")?"Be gentle with yourself. If the feeling stays heavy, please talk to someone you trust.":"";
+  curAct=a;p.hidden=false;$("popGo").focus();
+}
+function closePop(){$("pop").hidden=true}
+$("popGo").onclick=()=>{closePop();if(curAct&&isPadAct(curAct))openPad(curAct);else if(camOn()&&curAct)openCam(curAct)};$("popX").onclick=closePop;
+$("popNext").onclick=()=>{closePop();spin()};
+$("pop").onclick=e=>{if(e.target===$("pop"))closePop()};
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closePop()});
+
+const G=$("arena"),GN=["🧩 Memory","🔴 Pattern","🔤 Words","➕ Quick math","🧠 Trivia","🎲 Surprise me","📅 Daily word","🕵️ Mystery","🔢 Number rush","🖼️ Picture puzzle","✏️ Drawing pad","🌬️ Calm corner"];
+let gsel=-1,lvl=1,gtoken=0,topic=0;const bestMoves=S.best.mem||[0,0,0];
+function run(){gtoken++;$("gt").hidden=gsel!==4||band()===0;const F=[mem,pat,wrd,mth,tri,0,daily,mys,rush,puzzle,0,calmGame];F[gsel===5?surp():gsel]()}
+const LVL=[[0,"🟢 Easy"],[1,"🟡 Medium"],[2,"🔴 Hard"]];
+function lvChips(){chips($("gl"),LVL.filter(([k])=>lvOK().includes(k)),()=>lvl,k=>{lvl=k;run()})}
+lvChips();
+const LD=[["6 pairs","8 pairs","12 pairs"],["Slow, starts at 1 step","Faster","Very fast, starts at 3 steps"],["Short words","Everyday words","Long words"],["Small sums","Times tables and bigger sums","Squares, division and percentages"],["General knowledge","School and world facts","Tough questions, 3 lives"],["A gentle random game","A balanced random game","A tough random game"],null,["4 lives","3 lives","2 lives"],["3×3 grid","4×4 grid","5×5 grid"],["3×3 slide puzzle","4×4 slide puzzle","5×5 slide puzzle"]];
+function pickLevel(){
+  gtoken++;
+  $("gl").hidden=true;$("gt").hidden=gsel!==4||band()===0;
+  if(!LD[gsel]){run();return}
+  G.innerHTML='<p><b>Choose your level</b></p><div id="lv"></div>';
+  const oks=lvOK();
+  if(oks.length===1){lvl=oks[0];lvChips();run();return}
+  LVL.filter(([k])=>oks.includes(k)).forEach(([k,n])=>{
+    const b=document.createElement("button");b.className="pill opt";
+    b.innerHTML="<b></b><br><small></small>";
+    b.querySelector("b").textContent=n;b.querySelector("small").textContent=(band()===0?LDK:LD)[gsel][k];
+    b.onclick=()=>{lvl=k;lvChips();$("gl").hidden=false;run()};
+    $("lv").appendChild(b);
+  });
+}
+function gChips(){chips($("gtabs"),gOK().map(i=>[i,GN[i]]),()=>gsel,k=>{if(k===10){openPad(null);return}gsel=k;$("gtitle").textContent=GN[k];location.hash="#play";pickLevel()})}
+gChips();
+chips($("gt"),[[0,"🌍 Mixed"],[1,"🇵🇭 Filipino"],[2,"🔬 Science"],[3,"🍜 Food & music"]],()=>topic,k=>{topic=k;if(gsel===4&&!$("gl").hidden)run()});
+
+function mem(){
+  const E=["🍎","🐱","🌻","🚀","🎸","🍰","🦋","⚽","🍕","🐼","🎲","🌈","🐙","🎨","🍩","🌙","🐢","🎧","🚲","🍉","🦄","⛄","🔔","🍄"].sort(()=>Math.random()-.5).slice(0,(band()===0?[4,6,8]:[6,8,12])[lvl]);
+  const d=[...E,...E].sort(()=>Math.random()-.5);
+  let open=[],moves=0,found=0,lock=false;
+  G.innerHTML='<div class="info"><span id="mm">Moves: 0</span><span id="mb"></span></div><div class="grid" id="mg"></div>';
+  if(bestMoves[lvl])$("mb").textContent="Best: "+bestMoves[lvl];
+  function win(){
+    confetti();if(!bestMoves[lvl]||moves<bestMoves[lvl])bestMoves[lvl]=moves;S.best.mem=bestMoves;award([20,30,50][lvl],"memory");
+    G.insertAdjacentHTML("beforeend",'<p style="margin-top:14px"><b>You did it in '+moves+' moves! 🎉</b></p><button class="pill main" id="again">Play again</button>');
+    $("again").onclick=mem;addChallenge("Memory match","a win in "+moves+" moves");
+  }
+  d.forEach(e=>{
+    const b=document.createElement("button");b.className="mc";b.textContent="?";b.setAttribute("aria-label","Hidden card");
+    b.onclick=()=>{
+      if(lock||b.classList.contains("up")||b.classList.contains("ok"))return;
+      b.classList.add("up");b.textContent=e;open.push([b,e]);
+      if(open.length<2)return;
+      moves++;$("mm").textContent="Moves: "+moves;
+      const [x,y]=open;open=[];
+      if(x[1]===y[1]){x[0].className=y[0].className="mc ok";if(++found===E.length)win()}
+      else{lock=true;setTimeout(()=>{[x,y].forEach(([c])=>{c.className="mc";c.textContent="?"});lock=false},800)}
+    };
+    $("mg").appendChild(b);
+  });
+}
+
+function pat(){
+  const C=["#e63946","#2a9d8f","#f4a000","#3a5bd9"];
+  let seq=[],step=0,play=false;
+  G.innerHTML='<div class="info"><span id="pr">Round: 0</span><span id="pm">Press start</span></div><div class="pads" id="pp"></div><button class="pill main" id="ps" style="margin-top:14px">Start</button>';
+  const P=C.map((c,i)=>{const b=document.createElement("button");b.className="pad";b.style.background=c;b.setAttribute("aria-label","Pad "+(i+1));b.onclick=()=>tap(i);$("pp").appendChild(b);return b});
+  const flash=i=>new Promise(r=>{P[i].classList.add("lit");setTimeout(()=>{P[i].classList.remove("lit");setTimeout(r,(band()===0?[300,250,200]:[200,150,90])[lvl])},(band()===0?[800,650,500]:[550,400,260])[lvl])});
+  async function round(){
+    play=false;seq.push(Math.floor(Math.random()*4));step=0;
+    $("pr").textContent="Round: "+seq.length;$("pm").textContent="Watch…";
+    await new Promise(r=>setTimeout(r,600));
+    for(const i of seq){if(!P[0].isConnected)return;await flash(i)}
+    if(!P[0].isConnected)return;
+    play=true;$("pm").textContent="Your turn!";
+  }
+  function tap(i){
+    if(!play)return;
+    flash(i);
+    if(i!==seq[step]){play=false;const r=seq.length-1;S.best.pat=S.best.pat||[0,0,0];S.best.pat[lvl]=Math.max(S.best.pat[lvl]||0,r);award(Math.max(0,r)*[2,3,5][lvl],"focus");if(r>0)addChallenge("Pattern recall","round "+r);$("pm").textContent="Missed! You reached round "+r+" (best "+S.best.pat[lvl]+") 💪";$("ps").disabled=false;$("ps").textContent="Try again";return}
+    if(++step===seq.length){play=false;$("pm").textContent="Nice! ✨";setTimeout(round,700)}
+  }
+  $("ps").onclick=()=>{seq=Array.from({length:(band()===0?[0,0,1]:[0,0,2])[lvl]},()=>Math.floor(Math.random()*4));$("ps").disabled=true;round()};
+}
+
+const seenW=new Set();
+const WX=[[["water","You drink it"],["house","Where you live"],["bunny","Hops and has long ears"],["lemon","Sour yellow fruit"],["cloud","White and floats in the sky"],["candy","Sweet treat"],["pearl","Found inside an oyster"],["tulip","Spring flower"],["zebra","Striped animal"],["train","Runs on rails"],["storm","Thunder and lightning"],["honey","Made by bees"]],
+[["blanket","Keeps you warm in bed"],["journey","A long trip"],["thunder","Loud noise in a storm"],["diamond","Hard, sparkling gem"],["penguin","Bird that cannot fly and loves the cold"],["village","Smaller than a town"],["pyramid","Ancient tomb in Egypt"],["captain","Leads a ship"],["bicycle","Two wheels and pedals"],["lantern","A portable light"],["fortune","Luck or wealth"],["volcano","Mountain that erupts"]],
+[["encyclopedia","Book full of facts"],["laboratory","Where scientists experiment"],["archipelago","Group of many islands"],["bureaucracy","Complicated official procedures"],["entrepreneur","Starts a business"],["nightingale","Bird known for its song"],["electricity","Powers lights and phones"],["thermometer","Measures temperature"],["perseverance","Not giving up"],["kaleidoscope","Tube of changing colored patterns"],["hemisphere","Half of the Earth"],["constellation","Pattern of stars"]]];
+function wrd(){
+  const W0=[["planet","Earth is one"],["guitar","Has six strings"],["pizza","Italian favorite"],["ocean","Big and salty"],["garden","Where flowers grow"],["rocket","Goes to space"],["butter","Spread on toast"],["window","Glass in a wall"],["sunflower","Tall yellow flower"],["kitchen","Where you cook"],["rainbow","Colors after rain"],["library","Full of books"],["holiday","A break from work"],["chocolate","Sweet and brown"],["mountain","Higher than a hill"],["umbrella","Keeps you dry"]];
+  const WB=[[["apple","A red or green fruit"],["happy","Opposite of sad"],["music","You listen to it"],["phone","You are probably holding it"],["bread","Toasted for breakfast"],["river","Flows to the sea"],["smile","Shows you are happy"],["beach","Sand and waves"],["tiger","Big striped cat"],["dream","You have them when asleep"]],W0,[["adventure","An exciting journey"],["knowledge","What studying gives you"],["telescope","Looks at the stars"],["algorithm","Step-by-step rules for a computer"],["democracy","Rule by the people"],["pineapple","Spiky tropical fruit"],["atmosphere","Air around Earth"],["architecture","Designing buildings"],["photograph","Image taken by a camera"],["microscope","Shows tiny things"],["friendship","Bond between buddies"]]];
+  const wp=WB[lvl].concat(WX[lvl]);
+  let wf=wp.filter(w=>!seenW.has(w[0]));
+  if(wf.length<8){seenW.clear();wf=wp}
+  const W=wf.slice().sort(()=>Math.random()-.5).slice(0,8);
+  W.forEach(w=>seenW.add(w[0]));
+  let i=0,sc=0;
+  const scr=w=>{let s;do{s=[...w].sort(()=>Math.random()-.5).join("")}while(s===w);return s};
+  G.innerHTML='<div class="info"><span id="ws">Score: 0</span><button class="pill" id="wk">Skip</button></div><div class="scr" id="wz"></div><p id="wh" style="text-align:center"></p><input class="inp" id="wi" autocomplete="off" autocapitalize="off" aria-label="Your answer"><p id="wm" style="text-align:center;min-height:1.5em;margin-top:10px"></p><button class="pill main" id="wc">Check</button>';
+  function next(){
+    if(i>=W.length){
+      G.innerHTML='<p><b>All done! Score: '+sc+' of '+W.length+' 🎉</b></p><button class="pill main" id="again">Play again</button>';
+      if(sc>W.length/2)confetti();award(sc*[10,15,25][lvl],"words");addChallenge("Word scramble",sc+" of "+W.length);
+      $("again").onclick=wrd;return;
+    }
+    $("wz").textContent=scr(W[i][0]).toUpperCase();$("wh").textContent="Hint: "+W[i][1];
+    $("wi").value="";$("wm").textContent="";
+  }
+  function check(){
+    const v=$("wi").value.trim().toLowerCase();
+    if(!v)return;
+    if(v===W[i][0]){sc++;$("ws").textContent="Score: "+sc;$("wm").textContent="Correct! ✅";i++;setTimeout(next,700)}
+    else $("wm").textContent="Not yet, try again 🤔";
+  }
+  $("wc").onclick=check;
+  $("wi").onkeydown=e=>{if(e.key==="Enter")check()};
+  $("wk").onclick=()=>{i++;next()};
+  next();
+}
+
+function mth(){
+  let sc=0,t=30,q=null,lives=3,cmb=0;
+  const R=n=>Math.floor(Math.random()*n);
+  function gen(){
+    const a=R(9)+3,b=R(9)+3,c=R(8)+2;
+    if(band()===0){
+      const m=[6,10,20][lvl],x=R(m)+1,y=R(m)+1;
+      if(lvl===2&&R(3)===0){const u=[2,5,10][R(3)],v=R(5)+1;return[u+" × "+v,u*v]}
+      return R(2)?[x+" + "+y,x+y]:[(x+y)+" − "+x,y];
+    }
+    if(lvl===0){const x=R(20)+1,y=R(20)+1;return R(2)?[x+" + "+y,x+y]:[(x+y)+" − "+x,y]}
+    if(lvl===1){const x=R(70)+20,y=R(70)+20,m=R(4);return m===0?[a+" × "+b,a*b]:m===1?[x+" + "+y,x+y]:m===2?[(x+y)+" − "+y,x]:[(a*b)+" ÷ "+a,b]}
+    const k=R(6),x=R(400)+400,y=R(300)+50,n=R(15)+11,q=R(12)+6,d=R(9)+3,p=[10,20,25,50][R(4)],base=(R(10)+2)*20;
+    return k===0?[(a+10)+" × "+b,(a+10)*b]:k===1?["("+a+" + "+b+") × "+c,(a+b)*c]:k===2?[x+" − "+y,x-y]:k===3?[n+" × "+n,n*n]:k===4?[(q*d)+" ÷ "+d,q]:[p+"% of "+base,base*p/100];
+  }
+  G.innerHTML='<div class="info"><span id="ms">Score: 0</span><span id="mt">⏱ 30</span></div><div class="scr" id="mq"></div><input class="inp" id="mi" inputmode="numeric" autocomplete="off" aria-label="Your answer"><p id="mm2" style="text-align:center;min-height:1.5em;margin-top:10px"></p>';
+  const mt=$("mt"),mi=$("mi");
+  function ask(){q=gen();$("mq").textContent=q[0]+" = ?";mi.value="";mi.focus()}
+  const iv=setInterval(()=>{
+    if(!mt.isConnected){clearInterval(iv);return}
+    mt.textContent="⏱ "+(--t);
+    if(t<=0){clearInterval(iv);G.innerHTML='<p><b>Time is up! Score: '+sc+' 🎉</b></p><button class="pill main" id="again">Play again</button>';if(sc>=8)confetti();award(sc*[3,5,8][lvl],"math");addChallenge("Quick math",sc+" correct answers");$("again").onclick=mth}
+  },1000);
+  mi.onkeydown=e=>{
+    if(e.key!=="Enter"||mi.value.trim()==="")return;
+    if(+mi.value===q[1]){sc++;cmb++;if(cmb%5===0)t+=3;$("ms").textContent="Score: "+sc;$("mm2").textContent="";ask()}
+    else{cmb=0;if(lvl>0&&band()>0&&--lives<=0)t=1;$("mm2").textContent="Try again 🤔"+(lvl>0&&band()>0?" ❤️ "+Math.max(lives,0):"");mi.select()}
+  };
+  ask();
+}
+
+function addChallenge(game,res){
+  const o=$("chal");if(o)o.remove();
+  const b=document.createElement("button");b.className="pill";b.id="chal";b.style.marginTop="12px";b.textContent="📤 Challenge a friend";
+  b.onclick=async()=>{
+    const d={title:"Bored Buster",text:"I got "+res+" in "+game+" ("+["Easy","Medium","Hard"][lvl]+") on Bored Buster! Can you beat me?",url:location.href.split("#")[0]};
+    try{
+      if(navigator.share){await navigator.share(d);return}
+      await navigator.clipboard.writeText(d.text+" "+d.url);b.textContent="✅ Copied!";
+    }catch(e){if(e.name!=="AbortError")b.textContent="Copy the link to share"}
+  };
+  G.appendChild(b);
+}
+const TP=[[
+["What is the national fruit of the Philippines?","Mango",["Banana","Pineapple","Durian"],0],["What is the Filipino word for thank you?","Salamat",["Kumusta","Paalam","Pasensya"],0],["Luzon, Visayas and which other main island group?","Mindanao",["Palawan","Cebu","Mindoro"],0],["Which Filipino dish is cooked with vinegar and soy sauce?","Adobo",["Sinigang","Kare-kare","Lechon"],0],["What is the national tree of the Philippines?","Narra",["Acacia","Mango","Coconut"],0],["What is the currency of the Philippines?","Peso",["Ringgit","Baht","Dong"],0],
+["Which Cebu festival honors the Santo Niño?","Sinulog",["Ati-Atihan","Pahiyas","Masskara"],1],["Who was the first Filipino to win an Olympic gold medal?","Hidilyn Diaz",["Manny Pacquiao","Efren Reyes","Eugene Torre"],1],["In which province are the Chocolate Hills?","Bohol",["Cebu","Palawan","Leyte"],1],["What is the highest mountain in the Philippines?","Mount Apo",["Mayon Volcano","Mount Pulag","Taal Volcano"],1],["Which volcano in Albay is famous for its perfect cone?","Mayon",["Taal","Pinatubo","Kanlaon"],1],["Which dessert has shaved ice, sweet beans and fruits?","Halo-halo",["Bibingka","Turon","Leche flan"],1],
+["In what year did the Philippines declare independence from Spain?","1898",["1896","1946","1901"],2],["Which is the longest river in the Philippines?","Cagayan River",["Pasig River","Agusan River","Pampanga River"],2],["Who was the first president of the Philippines?","Emilio Aguinaldo",["Manuel Quezon","Jose P. Laurel","Sergio Osmeña"],2],["Which epic poem comes from the Ilocos region?","Biag ni Lam-ang",["Hudhud","Ibalon","Darangen"],2],["Which explorer was killed at the Battle of Mactan in 1521?","Ferdinand Magellan",["Miguel López de Legazpi","Vasco da Gama","Christopher Columbus"],2],["Which UNESCO site is an underground river in Palawan?","Puerto Princesa Underground River",["Banaue Rice Terraces","Tubbataha Reefs","Vigan"],2]
+],[
+["What is the center of an atom called?","Nucleus",["Electron","Molecule","Orbit"],0],["Which planet is closest to the Sun?","Mercury",["Venus","Earth","Mars"],0],["What process do plants use to make food from sunlight?","Photosynthesis",["Respiration","Digestion","Evaporation"],0],["Which organ pumps blood around the body?","Heart",["Lungs","Liver","Kidney"],0],["What is water called when it freezes?","Ice",["Steam","Vapor","Dew"],0],["How many legs does a spider have?","8",["6","10","12"],0],
+["What is the chemical symbol for sodium?","Na",["So","Sd","S"],1],["What is the speed of light closest to?","300,000 km/s",["3,000 km/s","30,000 km/s","3,000,000 km/s"],1],["Which part of a cell contains its DNA?","Nucleus",["Ribosome","Membrane","Cytoplasm"],1],["What is the most common gas in Earth's atmosphere?","Nitrogen",["Oxygen","Carbon dioxide","Argon"],1],["Who developed the theory of general relativity?","Albert Einstein",["Isaac Newton","Niels Bohr","Stephen Hawking"],1],["What is the pH of pure water?","7",["0","10","14"],1],
+["What is the study of fungi called?","Mycology",["Entomology","Ornithology","Botany"],2],["Which organelle is the site of protein synthesis?","Ribosome",["Lysosome","Golgi apparatus","Mitochondrion"],2],["What is the approximate age of the universe?","13.8 billion years",["4.6 billion years","1.2 billion years","46 billion years"],2],["Which law says force equals mass times acceleration?","Newton's second law",["Newton's first law","Newton's third law","Ohm's law"],2],["What is the unit of electrical resistance?","Ohm",["Volt","Ampere","Watt"],2],["Which metal has the highest melting point?","Tungsten",["Iron","Titanium","Platinum"],2]
+],[
+["Which country is sushi from?","Japan",["China","Thailand","Korea"],0],["What is the main ingredient of guacamole?","Avocado",["Tomato","Pea","Pepper"],0],["Which fruit is dried to make raisins?","Grapes",["Plums","Cherries","Figs"],0],["How many strings does a standard guitar have?","6",["4","5","8"],0],["Which instrument has black and white keys?","Piano",["Violin","Flute","Drum"],0],["Which country is pizza from?","Italy",["Greece","France","Spain"],0],
+["What is the main ingredient of hummus?","Chickpeas",["Lentils","Black beans","Potatoes"],1],["Which spice comes from the crocus flower?","Saffron",["Turmeric","Cinnamon","Paprika"],1],["Which Korean dish is made of fermented cabbage?","Kimchi",["Bibimbap","Bulgogi","Tteokbokki"],1],["Which group sang Dancing Queen?","ABBA",["Queen","Bee Gees","Boney M."],1],["How many keys does a standard piano have?","88",["76","92","100"],1],["Which country is the home of the tango?","Argentina",["Spain","Brazil","Mexico"],1],
+["Which Italian city is known for balsamic vinegar?","Modena",["Naples","Florence","Bologna"],2],["What is traditional miso made from?","Fermented soybeans",["Rice flour","Seaweed","Fish"],2],["Who composed The Four Seasons?","Antonio Vivaldi",["Johann Sebastian Bach","Wolfgang Amadeus Mozart","Ludwig van Beethoven"],2],["How many beats does a whole note last in 4/4 time?","4",["2","3","8"],2],["Which Italian dessert's name means pick me up?","Tiramisu",["Panna cotta","Cannoli","Gelato"],2],["Which French cooking term means everything in its place?","Mise en place",["Sous vide","Au gratin","Bain-marie"],2]
+]];
+const SK={memory:"🧩 Memory",focus:"🎯 Focus",words:"🔤 Words",math:"➕ Math",knowledge:"🧠 Knowledge",logic:"🕵️ Logic",calm:"🌬️ Calm"};
+function brain(){
+  const box=$("brainBox"),sk=S.skill||{},ent=Object.entries(SK);
+  const y=new Date();y.setDate(y.getDate()-1);
+  const alive=S.last===dayStr(new Date())||S.last===dayStr(y);
+  const top='<p><b>🔥 '+(alive?S.streak:0)+'-day streak · ⭐ '+S.points+' points</b></p>';
+  if(!ent.some(([k])=>sk[k]>0)){box.innerHTML="<p>Play a few games to see your strengths here.</p>";return}
+  const max=Math.max(100,...ent.map(([k])=>sk[k]||0));
+  const hi=ent.reduce((a,b)=>(sk[b[0]]||0)>(sk[a[0]]||0)?b:a),lo=ent.reduce((a,b)=>(sk[b[0]]||0)<(sk[a[0]]||0)?b:a);
+  box.innerHTML=top+ent.map(([k,n])=>'<div class="sk"><span>'+n+'</span><div class="bar"><i style="width:'+Math.round((sk[k]||0)/max*100)+'%"></i></div><b>'+(sk[k]||0)+'</b></div>').join("")+'<p style="margin-top:14px"><b>Strongest: '+hi[1]+'.</b> Train '+lo[1]+' next to balance your brain.</p>';
+}
+const DW=["tiger","plant","music","bread","cloud","dream","beach","smile","river","house","lemon","honey","storm","train","zebra","candy","pearl","tulip","water","happy","brave","light","night","ocean","green","stone","wheel","queen","magic","grape","chair","clock","dance","earth","fruit","heart","juice","knife","laugh","money","paper","radio","sheep","table","uncle","voice","whale","young","angel","bloom","crown","drink","eagle","flame","ghost","hotel","plane"];
+function daily(){
+  const d=new Date(),n=Math.floor(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/864e5),w=DW[n%DW.length];
+  if(!S.daily||S.daily.n!==n)S.daily={n,g:[]};
+  const D=S.daily,CL={"🟩":"#2e9e4f","🟨":"#c9a227","⬛":"#555"};
+  const sc=g=>{const r=Array(5).fill("⬛"),u=[...w];[...g].forEach((c,i)=>{if(c===w[i]){r[i]="🟩";u[i]=null}});[...g].forEach((c,i)=>{if(r[i]==="⬛"){const j=u.indexOf(c);if(j>-1){r[i]="🟨";u[j]=null}}});return r};
+  function draw(){
+    const won=D.g.includes(w),over=won||D.g.length>=6;
+    let h='<p><b>📅 Daily word</b>: guess the 5-letter word in 6 tries. Same word for everyone today!</p>';
+    h+=D.g.map(g=>{const r=sc(g);return '<div style="text-align:center">'+[...g].map((c,i)=>'<span style="display:inline-block;width:2.4rem;padding:4px 0;margin:2px;border-radius:8px;font-weight:700;color:#fff;background:'+CL[r[i]]+'">'+c.toUpperCase()+'</span>').join("")+'</div>'}).join("");
+    h+=over?'<p style="margin-top:12px"><b>'+(won?"Solved in "+D.g.length+"! 🎉":"The word was "+w.toUpperCase()+".")+' Come back tomorrow!</b></p><button class="pill main" id="ds">📤 Share result</button>':'<input class="inp" id="dw" maxlength="5" autocomplete="off" autocapitalize="off" aria-label="Your guess" style="margin-top:12px"><p id="dm" style="text-align:center;min-height:1.4em"></p><button class="pill main" id="dg">Guess ('+(6-D.g.length)+' left)</button>';
+    G.innerHTML=h;
+    if(over)$("ds").onclick=async()=>{
+      const x={text:"Bored Buster Daily "+(won?D.g.length:"X")+"/6\n"+D.g.map(g=>sc(g).join("")).join("\n")+"\nCan you beat me?",url:location.href.split("#")[0]};
+      try{if(navigator.share){await navigator.share(x);return}await navigator.clipboard.writeText(x.text+" "+x.url);$("ds").textContent="✅ Copied!"}catch(e){}
+    };else{$("dg").onclick=go;$("dw").onkeydown=e=>{if(e.key==="Enter")go()}}
+  }
+  function go(){
+    const v=$("dw").value.trim().toLowerCase();
+    if(!/^[a-z]{5}$/.test(v)){$("dm").textContent="Type a 5-letter word.";return}
+    D.g.push(v);save();
+    if(v===w){confetti();award((7-D.g.length)*10,"words")}else if(D.g.length>=6)award(5,"words");
+    draw();
+  }
+  draw();
+}
+const CASES=[
+{t:"The Missing Cake",i:"Someone ate the office birthday cake at 12:30. Suspects: Ana, Ben, Carla and Dev.",s:[
+["Dev was on a recorded video call from 12:15 to 12:45. Ana's badge shows she left the building at 12:20 and came back at 12:50. Who is cleared?",["Ana and Dev","Ben and Carla","Only Dev","Only Ana"],0,"Ana and Dev are cleared"],
+["Crumbs were on a keyboard only Ben and Carla use. Ben says he was in a meeting from 12:00 to 13:00, but that meeting was cancelled. What follows?",["Ben was there anyway","Ben has no alibi","Carla is cleared","Ben is guilty for sure"],1,"Ben has no alibi"],
+["Carla's badge shows she was in the printer room from 12:25 to 12:35. It is 30 seconds from the kitchen. What does this show?",["She was far away","She was close enough to do it","She is cleared","She is guilty for sure"],1,"Carla was close by"],
+["A camera at 12:30 shows a green jacket. Ben's green jacket has been at the dry cleaner since Monday (the receipt confirms it). Carla owns a green jacket too. Who does the evidence point to?",["Ben","Carla","Ana","Dev"],1,"Ben's jacket was elsewhere"]],
+f:["Who ate the cake?",["Ana","Ben","Carla","Dev"],2]},
+{t:"The Safe Code",i:"A safe opens with four numbers. Each clue is a number pattern, and the code is the four answers in order.",s:[
+["Clue 1: 2, 6, 12, 20, 30, ?",["40","42","44","36"],1,"42"],
+["Clue 2: 1, 4, 9, 16, 25, ?",["30","32","36","49"],2,"36"],
+["Clue 3: 3, 5, 9, 17, 33, ?",["49","57","65","66"],2,"65"],
+["Clue 4: 2, 3, 5, 7, 11, 13, ?",["15","17","19","21"],1,"17"]],
+f:["Which is the code?",["42-36-65-17","42-36-17-65","36-42-65-17","42-65-36-17"],0]},
+{t:"The Gallery Theft",i:"A painting vanished between 8:00 and 8:20 pm. The guests were Eli, Fay, Gus and Hana.",s:[
+["Eli was filmed at the bar from 7:55 to 8:25. Fay was in the cloakroom from 8:00 to 8:10 and in the garden from 8:15 to 8:25 (staff confirm both). What can we say?",["Eli is cleared; Fay has a 5-minute gap","Both are cleared","Neither is cleared","Fay is cleared; Eli is not"],0,"Fay has a gap from 8:10 to 8:15"],
+["The frame was taken down with a ladder from the garden shed. The shed was locked until 8:05, when Gus's key card opened it. What does this suggest?",["Gus is certainly guilty","Gus's card was used, which needs checking","Gus is cleared","Hana opened the shed"],1,"Gus's card opened the shed"],
+["Gus lost his card at 7:45 and reported it to staff at 7:50 (staff confirm). What does this suggest?",["Gus is guilty","Someone else used his card","The staff lied","The card was never used"],1,"someone else used the card"],
+["Hana was seen picking something up near the bar at 7:48, and a camera shows her entering the garden at 8:03. Who most likely used the card?",["Eli","Fay","Gus","Hana"],3,"Hana was near the shed at 8:03"]],
+f:["Who stole the painting?",["Eli","Fay","Gus","Hana"],3]},
+{t:"The Fruit Stall Riddle",i:"Three boxes are labeled Apples, Oranges and Mixed. Every label is wrong. You may pull out one fruit from one box.",s:[
+["Which box should you pick from?",["The one labeled Apples","The one labeled Oranges","The one labeled Mixed","Any box is the same"],2,"open the Mixed box"],
+["You pull an apple from the box labeled Mixed. What does that box really hold?",["Apples","Oranges","Mixed","We cannot tell"],0,"the Mixed box holds apples"],
+["The box labeled Oranges cannot hold oranges, and apples are taken. What does it hold?",["Mixed","Apples","Oranges","Nothing"],0,"the Oranges box is mixed"],
+["So what does the box labeled Apples hold?",["Oranges","Mixed","Apples","We cannot tell"],0,"the Apples box holds oranges"]],
+f:["How many fruits did you need to check to fix all the labels?",["1","2","3","6"],0]}
+];
+function mys(){
+  const my=gtoken,solved=S.cases||[];
+  G.innerHTML='<p><b>🕵️ Mystery cases</b> ('+solved.filter(Boolean).length+'/'+CASES.length+' solved)</p><p>You get '+[4,3,2][lvl]+' lives on this level. A 💡 hint removes one wrong option but costs a life.</p><div id="cl"></div>';
+  CASES.forEach((c,k)=>{const b=document.createElement("button");b.className="pill opt";b.textContent=(solved[k]?"✅ ":"🔎 ")+c.t;b.onclick=()=>play(k);$("cl").appendChild(b)});
+  function play(k){
+    const c=CASES[k],steps=c.s.concat([[c.f[0],c.f[1],c.f[2],""]]);
+    let i=0,lives=[4,3,2][lvl],ord=null,gone=[],msg="";const clues=[];
+    function fail(){G.innerHTML='<p><b>Out of lives 😕</b></p><p>The case went cold. Try again!</p><button class="pill main" id="bk">Back to cases</button>';$("bk").onclick=mys}
+    function show(){
+      if(my!==gtoken)return;
+      const [q,o,a]=steps[i];
+      if(!ord)ord=o.map((t,j)=>[t,j===a]).sort(()=>Math.random()-.5);
+      const left=ord.filter(([t])=>!gone.includes(t));
+      G.innerHTML='<div class="info"><span>'+c.t+' · '+(i+1)+'/'+steps.length+'</span><span>'+"❤️".repeat(lives)+'</span></div><p class="iq" style="font-style:italic"></p>'+(clues.length?'<p><b>Clues:</b> '+clues.join(" · ")+'</p>':'')+'<p class="q" style="font-weight:700;font-size:1.1rem"></p><div id="to"></div><p id="mz" style="min-height:1.4em"></p>';
+      G.querySelector(".iq").textContent=c.i;G.querySelector(".q").textContent=q;$("mz").textContent=msg;
+      left.forEach(([t,ok])=>{
+        const b=document.createElement("button");b.className="pill opt";b.textContent=t;
+        b.onclick=()=>{
+          if(ok){
+            if(i===steps.length-1){
+              S.cases=S.cases||[];S.cases[k]=true;confetti();award(30+lives*10,"logic");
+              G.innerHTML='<p><b>Case solved! 🎉</b></p><p>"'+c.t+'" is closed. +'+(30+lives*10)+' points</p><button class="pill main" id="bk">More cases</button>';$("bk").onclick=mys;return;
+            }
+            clues.push(steps[i][3]);i++;ord=null;gone=[];msg="";show();
+          }else{
+            lives--;gone.push(t);
+            if(lives<=0){fail();return}
+            msg="Not quite. That option is out. Think again.";show();
+          }
+        };
+        $("to").appendChild(b);
+      });
+      const wr=ord.filter(([t,ok])=>!ok&&!gone.includes(t));
+      if(lives>1&&wr.length>1){
+        const h=document.createElement("button");h.className="pill";h.textContent="💡 Hint (−1 life)";
+        h.onclick=()=>{gone.push(wr[Math.floor(Math.random()*wr.length)][0]);lives--;msg="Hint used: one wrong option removed.";show()};
+        G.appendChild(h);
+      }
+    }
+    show();
+  }
+}
+function rush(){
+  const N=(band()===0?[9,12,16]:[9,16,25])[lvl],cols=(band()===0?[3,3,4]:[3,4,5])[lvl];
+  const nums=Array.from({length:N},(_,i)=>i+1).sort(()=>Math.random()-.5);
+  let next=1,t0=0,iv=null;
+  S.best.rush=S.best.rush||[0,0,0];
+  G.innerHTML='<div class="info"><span id="rn">Tap 1</span><span id="rt">⏱ 0.0s</span></div><div class="grid" id="rg" style="grid-template-columns:repeat('+cols+',1fr)"></div><p style="margin-top:12px" id="rm"></p>';
+  $("rm").textContent=S.best.rush[lvl]?"Best: "+S.best.rush[lvl].toFixed(1)+"s":"Tap the numbers in order, from 1 up, as fast as you can.";
+  const rt=$("rt");
+  nums.forEach(n=>{
+    const b=document.createElement("button");b.className="mc up";b.textContent=n;b.style.fontSize="1.4rem";b.style.fontWeight="700";
+    b.onclick=()=>{
+      if(n!==next){b.style.background="#ffd3d3";setTimeout(()=>{b.style.background=""},250);return}
+      if(next===1){t0=performance.now();iv=setInterval(()=>{if(!rt.isConnected){clearInterval(iv);return}rt.textContent="⏱ "+((performance.now()-t0)/1000).toFixed(1)+"s"},100)}
+      b.className="mc ok";b.disabled=true;next++;
+      $("rn").textContent=next>N?"Done!":"Tap "+next;
+      if(next>N){
+        clearInterval(iv);
+        const secs=(performance.now()-t0)/1000,pb=!S.best.rush[lvl]||secs<S.best.rush[lvl];
+        if(pb)S.best.rush[lvl]=secs;
+        confetti();award([10,20,30][lvl]+(pb?10:0),"focus");
+        G.insertAdjacentHTML("beforeend",'<p style="margin-top:14px"><b>Finished in '+secs.toFixed(1)+' seconds! '+(pb?"New best! 🏆":"🎉")+'</b></p><button class="pill main" id="again">Play again</button>');
+        $("again").onclick=rush;addChallenge("Number rush","a time of "+secs.toFixed(1)+" seconds");
+      }
+    };
+    $("rg").appendChild(b);
+  });
+}
+const seenQ=new Set();
+const TX=[[["How many days are in a leap year?","366",["365","364","367"]],["Which animal is known as the king of the jungle?","Lion",["Tiger","Elephant","Gorilla"]],["What color do you get when you mix blue and yellow?","Green",["Orange","Purple","Brown"]],["How many sides does a triangle have?","3",["4","5","6"]],["Which planet do we live on?","Earth",["Mars","Venus","Saturn"]],["What is the tallest animal in the world?","Giraffe",["Elephant","Horse","Camel"]],["Which season comes after winter?","Spring",["Summer","Autumn","Monsoon"]],["Which gas do humans need to breathe to live?","Oxygen",["Nitrogen","Helium","Carbon dioxide"]],["In which country is the Eiffel Tower?","France",["Italy","Spain","Germany"]],["What is the capital of South Korea?","Seoul",["Busan","Tokyo","Incheon"]],["How many colors are in a rainbow?","7",["5","6","8"]],["Which language is mostly spoken in Brazil?","Portuguese",["Spanish","English","French"]],["What is the largest planet in our solar system?","Jupiter",["Saturn","Neptune","Earth"]]],
+[["What is the smallest country in the world?","Vatican City",["Monaco","Malta","San Marino"]],["What is the hardest natural substance?","Diamond",["Gold","Quartz","Iron"]],["Who wrote Romeo and Juliet?","William Shakespeare",["Charles Dickens","Jane Austen","Mark Twain"]],["Which blood cells fight infection?","White blood cells",["Red blood cells","Platelets","Plasma"]],["What is the currency of Japan?","Yen",["Won","Yuan","Ringgit"]],["What is the largest hot desert in the world?","Sahara",["Gobi","Kalahari","Arabian"]],["Which planet is famous for its rings?","Saturn",["Jupiter","Uranus","Mars"]],["What does DNA stand for?","Deoxyribonucleic acid",["Dioxyribonucleic acid","Deoxyribose nucleic anhydride","Double nitrogen acid"]],["Which country gave the Statue of Liberty to the USA?","France",["England","Spain","Italy"]],["Who was the first person to walk on the Moon?","Neil Armstrong",["Buzz Aldrin","Yuri Gagarin","John Glenn"]],["What is the capital of Canada?","Ottawa",["Toronto","Vancouver","Montreal"]],["Which ocean lies between Africa and Australia?","Indian",["Atlantic","Pacific","Arctic"]],["Who wrote the novel Noli Me Tangere?","José Rizal",["Francisco Balagtas","Andres Bonifacio","Apolinario Mabini"]],["Which is the longest river in Africa?","Nile",["Congo","Niger","Zambezi"]]],
+[["Who painted The Persistence of Memory?","Salvador Dalí",["Pablo Picasso","René Magritte","Joan Miró"]],["What is the capital of Turkey?","Ankara",["Istanbul","Izmir","Antalya"]],["In which year did World War II end?","1945",["1943","1946","1944"]],["Which scientist discovered penicillin?","Alexander Fleming",["Louis Pasteur","Marie Curie","Joseph Lister"]],["What is the largest moon of Saturn?","Titan",["Europa","Ganymede","Enceladus"]],["Which philosopher wrote The Republic?","Plato",["Aristotle","Socrates","Descartes"]],["What is the SI unit of force?","Newton",["Joule","Watt","Pascal"]],["In which country is the city of Timbuktu?","Mali",["Niger","Chad","Senegal"]],["What is the chemical formula of table salt?","NaCl",["KCl","NaOH","CaCO3"]],["Who described the three laws of planetary motion?","Johannes Kepler",["Galileo Galilei","Isaac Newton","Nicolaus Copernicus"]],["What is the deepest known point in the world's oceans?","Challenger Deep",["Tonga Trench","Java Trench","Puerto Rico Trench"]],["Which empire was ruled by Genghis Khan?","Mongol Empire",["Ottoman Empire","Persian Empire","Roman Empire"]],["How many chromosomes do humans normally have?","46",["44","48","23"]],["In which year did the Titanic sink?","1912",["1905","1915","1921"]]]];
+function tri(){
+  const B=[[["Which planet is known as the Red Planet?","Mars",["Venus","Jupiter","Mercury"]],["How many continents are there?","7",["5","6","8"]],["What is the capital of Japan?","Tokyo",["Seoul","Beijing","Bangkok"]],["What is the largest animal on Earth?","Blue whale",["Elephant","Giraffe","Great white shark"]],["Which ocean is the largest?","Pacific",["Atlantic","Indian","Arctic"]],["What is the capital of the Philippines?","Manila",["Cebu","Davao","Quezon City"]]],
+  [["Who painted the Mona Lisa?","Leonardo da Vinci",["Michelangelo","Raphael","Van Gogh"]],["What is the chemical symbol for gold?","Au",["Ag","Gd","Go"]],["In which year did humans first land on the Moon?","1969",["1959","1972","1965"]],["How many bones does an adult human have?","206",["186","250","312"]],["What is the capital of Australia?","Canberra",["Sydney","Melbourne","Perth"]],["What is the national flower of the Philippines?","Sampaguita",["Sunflower","Rose","Orchid"]]],
+  [["Who wrote One Hundred Years of Solitude?","Gabriel García Márquez",["Jorge Luis Borges","Isabel Allende","Pablo Neruda"]],["What is the longest river in Europe?","Volga",["Danube","Rhine","Seine"]],["In which year did the Berlin Wall fall?","1989",["1987","1991","1985"]],["What is the capital of Kazakhstan?","Astana",["Almaty","Tashkent","Bishkek"]],["Who developed the first smallpox vaccine?","Edward Jenner",["Louis Pasteur","Jonas Salk","Alexander Fleming"]],["What is the smallest prime number greater than 20?","23",["21","25","27"]]]];
+  const pool=band()===0?KTL[lvl]:topic===0?B[lvl].concat(TX[lvl]):TP[topic-1].filter(q=>q[3]===lvl);
+  let fresh=pool.filter(q=>!seenQ.has(q[0]));
+  if(fresh.length<5){seenQ.clear();fresh=pool}
+  const Q=fresh.slice().sort(()=>Math.random()-.5).slice(0,5),my=gtoken;
+  Q.forEach(q=>seenQ.add(q[0]));let lives=3,cmb=0,bonus=0;
+  let i=0,sc=0;
+  function next(){
+    if(my!==gtoken)return;
+    if(i>=Q.length){G.innerHTML='<p><b>Score: '+sc+' of '+Q.length+' 🎉</b></p><button class="pill main" id="again">Play again</button>';if(sc>=Math.ceil(Q.length*.8))confetti();award(sc*[10,15,25][lvl]+bonus,"knowledge");addChallenge("Trivia",sc+" of "+Q.length);$("again").onclick=tri;return}
+    const [q,ok,bad]=Q[i];
+    G.innerHTML='<div class="info"><span>Question '+(i+1)+' of '+Q.length+'</span><span>'+(lvl>0&&band()>0?"❤️".repeat(Math.max(lives,0))+" ":"")+'🔥'+cmb+' · Score: '+sc+'</span></div><p style="font-weight:700;font-size:1.15rem"></p><div id="to"></div>';
+    G.querySelector("p").textContent=q;
+    [ok,...bad].sort(()=>Math.random()-.5).forEach(o=>{
+      const b=document.createElement("button");b.className="pill opt";b.textContent=o;
+      b.onclick=()=>{
+        document.querySelectorAll("#to .opt").forEach(x=>{x.disabled=true;if(x.textContent===ok)x.classList.add("good")});
+        if(o===ok){sc++;cmb++;bonus+=cmb>1?(cmb-1)*[2,3,5][lvl]:0}else{b.classList.add("bad");cmb=0;lives--;if(lvl>0&&band()>0&&lives<=0)i=Q.length}
+        i++;setTimeout(next,1100);
+      };
+      $("to").appendChild(b);
+    });
+  }
+  next();
+}
+$("share").onclick=async()=>{
+  const d={title:"Bored Buster",text:"Try Bored Buster: activities and brain games to beat boredom! Open it in Chrome or Safari, then tap Install to add it to your phone.",url:location.href.split("#")[0]};
+  try{
+    if(navigator.share){await navigator.share(d);return}
+    await navigator.clipboard.writeText(d.url);$("share").textContent="✅ Link copied!";
+  }catch(e){if(e.name!=="AbortError")$("share").textContent="Copy the link from your browser bar"}
+};
+function band(){return S.age&&S.age>=16?2:S.age&&S.age>=9?1:0}
+function gOK(){return band()===0?[0,9,4,3,1,8,10,11]:[6,7,0,9,4,3,1,8,10,11]}
+function lvOK(){return band()===1?[0,1]:[0,1,2]}
+function AL(){return band()===0?KA:A}
+function surp(){const l=gOK().filter(g=>g!==5&&g!==6);return l[Math.floor(Math.random()*l.length)]}
+const KA=[
+["Do 10 jumping jacks and count out loud.","r",5,"Move"],
+["Find 5 red things in your room.","rcb",5,"Brain game"],
+["Sing your favorite song as loud as you can.","rsb",5,"Music"],
+["Give someone you love a big hug.","ls",5,"Connect"],
+["Take 5 slow dragon breaths: smell the flower, blow out the candle.","ta",5,"Relax"],
+["Do a funny animal walk across the room.","rb",5,"Move"],
+["Draw your favorite animal.","tcbs",15,"Creative"],
+["Build a tall tower with blocks or cushions.","rb",15,"Creative"],
+["Play I spy with someone at home.","lb",15,"Connect"],
+["Tell a story using three toys.","cb",15,"Imagine"],
+["Ask a grown-up to tell you about when they were little.","lc",15,"Connect"],
+["Make a card for someone and tell them thank you.","sl",30,"Creative"],
+["Build a blanket fort and read a book inside.","tab",30,"Relax"],
+["Go outside with a grown-up and look for 5 different leaves.","rcb",30,"Learn"],
+["Pretend you are a cat and walk on tiptoes.","rb",5,"Move"],
+["Name 5 animals that live in water.","cb",5,"Brain game"],
+["Count the windows and doors in your home.","c",5,"Brain game"],
+["Hug your favorite toy and tell it about your day.","lst",5,"Connect"],
+["Close your eyes and listen for 5 different sounds.","ta",5,"Mindful"],
+["Make three funny faces in the mirror.","bsr",5,"Creative"],
+["Wiggle your whole body for 10 seconds, then freeze like a statue.","rb",5,"Move"],
+["Name three things that make you happy.","sl",5,"Reflect"],
+["Tell a grown-up one thing you are proud of.","ls",5,"Connect"],
+["Stretch up like a tall tree, then bend down like a rag doll.","tar",5,"Move"],
+["Make a paper boat or paper plane and test it.","cb",15,"Creative"],
+["Sort your toys by color.","rb",15,"Reset"],
+["Dance with a scarf or towel to your favorite song.","rb",15,"Music"],
+["Look at a picture book and make up your own story.","tcs",15,"Imagine"],
+["Make a mini obstacle course with pillows and jump through it.","r",30,"Move"],
+["Decorate a simple snack with a grown-up.","sl",30,"Creative"]
+];
+const KT=[
+["What color is the sky on a sunny day?","Blue",["Green","Red","Pink"]],["Which animal says moo?","Cow",["Dog","Cat","Duck"]],["How many days are in a week?","7",["5","10","12"]],["Which fruit is yellow and long?","Banana",["Apple","Grape","Orange"]],["What do bees make?","Honey",["Milk","Juice","Bread"]],["Which animal has a long trunk?","Elephant",["Lion","Rabbit","Cow"]],["How many legs does a dog have?","4",["2","6","8"]],["What shape is a ball?","Round",["Square","Triangle","Flat"]],["What do you use to brush your teeth?","Toothbrush",["Spoon","Comb","Shoe"]],["What comes after the number 5?","6",["4","7","9"]],["Which season is very cold and snowy?","Winter",["Summer","Spring","Rainy season"]],["Where do fish live?","In water",["In trees","In the sky","In a cave"]],["What color do you get from mixing red and yellow?","Orange",["Green","Purple","Blue"]],["What is the national fruit of the Philippines?","Mango",["Banana","Apple","Grapes"]],["How do we say thank you in Filipino?","Salamat",["Kumusta","Paalam","Pasensya"]]
+];
+const KT2=[
+["Which planet do we live on?","Earth",["Mars","Moon","Sun"]],["How many months are in a year?","12",["10","11","13"]],["Which is the biggest animal in the ocean?","Blue whale",["Shark","Dolphin","Octopus"]],["What is 10 plus 5?","15",["14","16","20"]],["What is the capital of the Philippines?","Manila",["Cebu","Davao","Baguio"]],["Which of these can fly?","Bat",["Cow","Penguin","Dog"]]
+];
+const KTL=[KT.slice(0,6),KT.slice(6,12),KT.slice(12).concat(KT2)];
+const LDK=[["4 pairs","6 pairs","8 pairs"],["Very slow, 1 step to start","Slow","A bit faster"],["Short words","Everyday words","Long words"],["Adding up to 6","Adding and taking away up to 10","Bigger numbers and easy times tables"],["Animals and colors","Easy facts about the world","Trickier facts"],["A gentle random game","A bit harder","A bigger challenge"],null,["4 lives","3 lives","2 lives"],["3×3 grid","3×4 grid","4×4 grid"],["4 pieces","6 pieces","9 pieces"]];
+function loadMoments(){try{return JSON.parse(localStorage.getItem("bbMoments")||"[]")}catch(e){return[]}}
+function saveMoment(x,m){
+  const L=loadMoments();L.unshift(x);
+  while(L.length>12)L.pop();
+  try{localStorage.setItem("bbMoments",JSON.stringify(L));m.textContent="Saved! Find it in 🧠 My brain, under My moments. 📸";S.n=S.n||{};S.n.art=(S.n.art||0)+1;award(5)}
+  catch(e){m.textContent="There is no room left. Please delete an old moment first."}
+}
+function pickPhoto(a,m){
+  const f=document.createElement("input");f.type="file";f.accept="image/*";
+  f.onchange=()=>{
+    const file=f.files&&f.files[0];if(!file)return;
+    const img=new Image(),url=URL.createObjectURL(file);
+    img.onload=()=>{
+      const sc=Math.min(1,480/Math.max(img.width,img.height)),c=document.createElement("canvas");
+      c.width=Math.round(img.width*sc);c.height=Math.round(img.height*sc);
+      c.getContext("2d").drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(url);
+      saveMoment({t:a[0],d:new Date().toLocaleDateString(),img:c.toDataURL("image/jpeg",0.6)},m);
+    };
+    img.onerror=()=>{m.textContent="Sorry, that picture could not be opened."};
+    img.src=url;
+  };
+  f.click();
+}
+function addMoment(r,a){
+  const acts=r.querySelector(".acts");if(!acts)return;
+  if(isPadAct(a)){const p=document.createElement("button");p.className="pill";p.textContent="✏️ Drawing pad";p.onclick=()=>openPad(a);acts.appendChild(p)}
+}
+function moments(){
+  const box=$("momBox"),L=loadMoments();
+  box.innerHTML="";
+  if(!L.length){box.textContent="Tap Let’s do it! on an activity, then take a picture of what you did. Pictures stay on this device only.";return}
+  const p=document.createElement("p");p.textContent="Pictures stay on this device only. The last 12 are kept.";box.appendChild(p);
+  const g=document.createElement("div");g.className="mom";
+  L.forEach((x,i)=>{
+    const f=document.createElement("figure");f.style.margin="0";
+    const im=document.createElement("img");im.src=x.img;im.alt="Picture saved on "+x.d;
+    const c=document.createElement("figcaption");c.textContent=x.d+" · "+x.t;
+    const d=document.createElement("button");d.className="pill";d.textContent="Delete";
+    d.onclick=()=>{const K=loadMoments();K.splice(i,1);try{localStorage.setItem("bbMoments",JSON.stringify(K))}catch(e){}moments()};
+    f.append(im,c,d);g.appendChild(f);
+  });
+  box.appendChild(g);
+}
+let curAct=null,camAct=null,camStream=null,camFace="environment";
+function stopCam(){if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null}$("cam").hidden=true}
+async function startCam(){
+  try{
+    if(camStream)camStream.getTracks().forEach(t=>t.stop());
+    camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:camFace},audio:false});
+    $("camV").srcObject=camStream;$("camMsg").textContent="";
+  }catch(e){$("camMsg").textContent="The camera is not available. You can tap Skip.";$("camShot").disabled=true}
+}
+function openCam(a){
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia)return;
+  camAct=a;$("camT").textContent=a[0];$("camShot").disabled=false;$("camMsg").textContent="";
+  $("camHint").textContent=band()===0?"Ask a grown-up to help. Take a picture of what you made, not of people. Pictures stay on this device.":"Pictures stay on this device only.";
+  $("cam").hidden=false;startCam();
+}
+$("camShot").onclick=()=>{
+  const v=$("camV");if(!v.videoWidth)return;
+  const sc=Math.min(1,480/Math.max(v.videoWidth,v.videoHeight)),c=document.createElement("canvas");
+  c.width=Math.round(v.videoWidth*sc);c.height=Math.round(v.videoHeight*sc);
+  c.getContext("2d").drawImage(v,0,0,c.width,c.height);
+  saveMoment({t:camAct[0],d:new Date().toLocaleDateString(),img:c.toDataURL("image/jpeg",0.6)},$("camMsg"));
+  $("camShot").disabled=true;setTimeout(stopCam,1300);
+};
+$("camSkip").onclick=stopCam;
+$("camFlip").onclick=()=>{camFace=camFace==="environment"?"user":"environment";startCam()};
+function camOn(){return S.cam===undefined?band()>0:S.cam}
+function camLabel(){$("camBtn").textContent=camOn()?"📸 Camera after activities: on":"📸 Camera after activities: off"}
+$("camBtn").onclick=()=>{S.cam=!camOn();save();camLabel()};
+camLabel();
+function scene(n){
+  const c=document.createElement("canvas");c.width=c.height=600;const x=c.getContext("2d");
+  const bg=(a,b)=>{const q=x.createLinearGradient(0,0,0,600);q.addColorStop(0,a);q.addColorStop(1,b);x.fillStyle=q;x.fillRect(0,0,600,600)};
+  const dot=(px,py,r,col)=>{x.fillStyle=col;x.beginPath();x.arc(px,py,r,0,7);x.fill()};
+  if(n===0){
+    bg("#7cc8ff","#d9f3ff");dot(480,110,60,"#ffd23f");x.fillStyle="#4caf50";x.fillRect(0,380,600,220);
+    [[100,330],[260,290],[420,340],[170,470],[350,500],[520,450]].forEach(([a,b])=>{x.fillStyle="#2e7d32";x.fillRect(a-5,b,10,600-b);for(let i=0;i<12;i++)dot(a+Math.cos(i*.52)*38,b+Math.sin(i*.52)*38,17,"#ffc400");dot(a,b,24,"#6d4c1d")});
+  }else if(n===1){
+    bg("#8fd3ff","#e8f7ff");
+    ["#e53935","#fb8c00","#fdd835","#43a047","#1e88e5","#8e24aa"].forEach((col,i)=>{x.strokeStyle=col;x.lineWidth=30;x.beginPath();x.arc(300,430,240-i*30,Math.PI,0);x.stroke()});
+    x.fillStyle="#66bb6a";x.fillRect(0,440,600,160);
+    [[110,90],[470,130]].forEach(([a,b])=>{dot(a,b,40,"#fff");dot(a+40,b+10,34,"#fff");dot(a-40,b+10,30,"#fff")});
+  }else if(n===2){
+    bg("#ff7e5f","#6a3093");dot(300,340,95,"#ffe082");x.fillStyle="#1565c0";x.fillRect(0,360,600,130);x.fillStyle="#0d47a1";x.fillRect(0,490,600,110);
+    x.fillStyle="#fff";x.beginPath();x.moveTo(430,290);x.lineTo(430,380);x.lineTo(510,380);x.fill();x.fillStyle="#6d4c41";x.fillRect(410,380,120,16);
+  }else{
+    bg("#0b1445","#2a3a8c");for(let i=0;i<40;i++)dot((i*97)%600,(i*53)%330,2+i%3,"#fff");
+    dot(450,120,55,"#fff8c4");dot(472,108,48,"#16206b");dot(150,650,280,"#1b5e20");dot(480,660,290,"#2e7d32");
+  }
+  return c;
+}
+function puzzle(){
+  const kid=band()===0,my=gtoken;
+  const [R,C]=(kid?[[2,2],[2,3],[3,3]]:band()===1?[[3,3],[4,4]]:[[3,3],[4,4],[5,5]])[lvl];
+  const N=R*C,img=scene(Math.floor(Math.random()*4)).toDataURL("image/jpeg",.85);
+  let tiles=[...Array(N).keys()],sel=-1,moves=0,won=false;
+  const solved=()=>tiles.every((t,i)=>t===i);
+  const nb=p=>{const r=Math.floor(p/C),c=p%C,l=[];if(r>0)l.push(p-C);if(r<R-1)l.push(p+C);if(c>0)l.push(p-1);if(c<C-1)l.push(p+1);return l};
+  if(kid){do{tiles.sort(()=>Math.random()-.5)}while(solved())}
+  else{do{for(let k=0;k<N*40;k++){const b=tiles.indexOf(N-1),n=nb(b),q=n[Math.floor(Math.random()*n.length)];[tiles[b],tiles[q]]=[tiles[q],tiles[b]]}}while(solved())}
+  G.innerHTML='<div class="info"><span id="pm1">Moves: 0</span><button class="pill" id="pk">👁 Peek</button></div><img id="pi" alt="The finished picture" style="display:none;width:96px;border-radius:10px;margin:0 auto 8px"><div class="pz" id="pg"></div><p id="pt" style="margin-top:8px"></p>';
+  $("pi").src=img;
+  $("pt").textContent=kid?"Tap one piece, then tap another to swap them.":"Slide the pieces into the empty space to rebuild the picture.";
+  const g=$("pg");g.style.setProperty("--img","url("+img+")");
+  g.style.gridTemplateColumns="repeat("+C+",1fr)";g.style.gridTemplateRows="repeat("+R+",1fr)";g.style.aspectRatio=C+"/"+R;
+  function draw(){
+    g.innerHTML="";
+    tiles.forEach((t,p)=>{
+      const b=document.createElement("button");b.className="pzt";b.setAttribute("aria-label","Piece "+(t+1));
+      if(!kid&&t===N-1&&!won){b.style.backgroundImage="none";b.style.background="rgba(0,0,0,.35)";b.disabled=true;b.setAttribute("aria-label","Empty space")}
+      else{b.style.backgroundSize=(C*100)+"% "+(R*100)+"%";b.style.backgroundPosition=(C>1?(t%C)/(C-1)*100:0)+"% "+(R>1?Math.floor(t/C)/(R-1)*100:0)+"%";if(!kid&&lvl===0)b.textContent=t+1}
+      if(sel===p)b.style.outline="4px solid #ffd23f";
+      b.onclick=()=>tap(p);g.appendChild(b);
+    });
+  }
+  function finish(){
+    confetti();award([20,35,50][lvl],"logic");
+    G.insertAdjacentHTML("beforeend",'<p style="margin-top:12px"><b>Puzzle solved in '+moves+' moves! 🎉</b></p><button class="pill main" id="again">New picture</button>');
+    $("again").onclick=puzzle;addChallenge("Picture puzzle","a solved puzzle in "+moves+" moves");
+  }
+  function tap(p){
+    if(won||my!==gtoken)return;
+    if(kid){
+      if(sel<0)sel=p;else if(sel===p)sel=-1;else{[tiles[sel],tiles[p]]=[tiles[p],tiles[sel]];sel=-1;moves++}
+    }else{
+      const b=tiles.indexOf(N-1);if(!nb(b).includes(p))return;
+      [tiles[b],tiles[p]]=[tiles[p],tiles[b]];moves++;
+    }
+    $("pm1").textContent="Moves: "+moves;
+    if(solved()){won=true;draw();finish()}else draw();
+  }
+  const pk=$("pk");
+  if(kid||lvl===0){$("pi").style.display="block";pk.style.display="none"}
+  else pk.onclick=()=>{$("pi").style.display="block";setTimeout(()=>{$("pi").style.display="none"},3000)};
+  draw();
+}
+const PADC=["#222222","#e53935","#fb8c00","#fdd835","#43a047","#1e88e5","#8e24aa","#ec407a"];
+let pCol=PADC[0],pSz=7,pErase=false,pAct=null,pSnap=[];
+function isPadAct(a){return /\b(draw|doodle|sketch|write|poem|postcard|card)\b/i.test(a[0])}
+function padCtx(){return $("padC").getContext("2d")}
+function openPad(a){
+  pAct=a;pSnap=[];$("pad").hidden=false;document.body.style.overflow="hidden";
+  $("padT").textContent=a?"✏️ "+a[0]:"✏️ Drawing pad";
+  const c=$("padC"),dpr=window.devicePixelRatio||1;
+  c.width=Math.round(c.clientWidth*dpr);c.height=Math.round(c.clientHeight*dpr);
+  padCtx().fillStyle="#fff";padCtx().fillRect(0,0,c.width,c.height);
+  $("padMsg").textContent="";buildTools();
+}
+function closePad(){$("pad").hidden=true;document.body.style.overflow=location.hash==="#play"?"hidden":""}
+function snap(){const c=$("padC");pSnap.push(padCtx().getImageData(0,0,c.width,c.height));if(pSnap.length>15)pSnap.shift()}
+function padUndo(){const s=pSnap.pop();if(s)padCtx().putImageData(s,0,0)}
+function padClear(){const c=$("padC");snap();padCtx().fillStyle="#fff";padCtx().fillRect(0,0,c.width,c.height)}
+function padSave(){
+  const c=$("padC"),sc=Math.min(1,480/Math.max(c.width,c.height)),o=document.createElement("canvas");
+  o.width=Math.round(c.width*sc);o.height=Math.round(c.height*sc);
+  const x=o.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,o.width,o.height);x.drawImage(c,0,0,o.width,o.height);
+  saveMoment({t:"✏️ "+(pAct?pAct[0]:"Free drawing"),d:new Date().toLocaleDateString(),img:o.toDataURL("image/jpeg",.7)},$("padMsg"));
+}
+function buildTools(){
+  const t=$("padTools");t.innerHTML="";
+  PADC.forEach(col=>{const b=document.createElement("button");b.className="sw";b.style.background=col;b.setAttribute("aria-label","Color "+col);b.setAttribute("aria-pressed",String(!pErase&&pCol===col));b.onclick=()=>{pCol=col;pErase=false;buildTools()};t.appendChild(b)});
+  [["•",3],["●",7],["⬤",14]].forEach(([n,s])=>{const b=document.createElement("button");b.className="chip";b.textContent=n;b.setAttribute("aria-label","Brush size "+s);b.setAttribute("aria-pressed",String(pSz===s));b.onclick=()=>{pSz=s;buildTools()};t.appendChild(b)});
+  [["🧽 Eraser",()=>{pErase=!pErase;buildTools()},pErase],["↩ Undo",padUndo],["🗑 Clear",padClear],["💾 Save",padSave]].forEach(([n,f,on])=>{const b=document.createElement("button");b.className="chip";b.textContent=n;if(on!==undefined)b.setAttribute("aria-pressed",String(on));b.onclick=f;t.appendChild(b)});
+}
+(function(){
+  const c=$("padC");let d=false,lx=0,ly=0;
+  const pos=e=>{const r=c.getBoundingClientRect();return[(e.clientX-r.left)*c.width/r.width,(e.clientY-r.top)*c.height/r.height]};
+  const stroke=(a,b,x2,y2)=>{const x=padCtx();x.lineCap="round";x.lineJoin="round";x.strokeStyle=pErase?"#fff":pCol;x.lineWidth=pSz*(c.width/c.getBoundingClientRect().width);x.beginPath();x.moveTo(a,b);x.lineTo(x2,y2);x.stroke()};
+  c.addEventListener("pointerdown",e=>{e.preventDefault();c.setPointerCapture(e.pointerId);snap();d=true;[lx,ly]=pos(e);stroke(lx,ly,lx,ly)});
+  c.addEventListener("pointermove",e=>{if(!d)return;const[x,y]=pos(e);stroke(lx,ly,x,y);lx=x;ly=y});
+  ["pointerup","pointercancel"].forEach(t=>c.addEventListener(t,()=>{d=false}));
+})();
+$("padX").onclick=closePad;
+const BADGES=[
+["first","⭐","First steps","Earn 10 points",()=>S.points>=10],
+["s3","🔥","3-day streak","Play 3 days in a row",()=>(S.bestStreak||0)>=3],
+["s7","🏆","7-day streak","Play 7 days in a row",()=>(S.bestStreak||0)>=7],
+["mem","🧩","Memory Star","Win 5 Memory games",()=>nn("memory")>=5],
+["quiz","🧠","Quiz Whiz","Finish 5 Trivia rounds",()=>nn("knowledge")>=5],
+["det","🕵️","Detective","Solve 3 puzzles or cases",()=>nn("logic")>=3],
+["word","🔤","Word Wizard","Solve 3 daily words",()=>nn("words")>=3],
+["math","➕","Math Master","Finish 5 Quick math rounds",()=>nn("math")>=5],
+["focus","🎯","Laser Focus","Play 5 focus games",()=>nn("focus")>=5],
+["art","🎨","Little Artist","Save 1 drawing or picture",()=>nn("art")>=1],
+["calm","🌬️","Calm Mind","Finish 3 calm breathing sessions",()=>nn("calm")>=3],
+["champ","🌟","Challenge Champ","Finish 3 daily challenges",()=>(S.chDone||0)>=3]
+];
+function nn(k){return (S.n&&S.n[k])||0}
+function toast(t){const el=$("toast");el.textContent=t;el.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>{el.hidden=true},3500)}
+function checkBadges(){
+  S.badges=S.badges||[];
+  BADGES.forEach(([id,e,n,d,f])=>{if(!S.badges.includes(id)&&f()){S.badges.push(id);toast("🏅 New badge: "+n)}});
+}
+function badges(){
+  const box=$("badgeBox"),got=S.badges||[];
+  box.innerHTML="";
+  const p=document.createElement("p");p.textContent=got.length+" of "+BADGES.length+" earned";box.appendChild(p);
+  const g=document.createElement("div");g.className="bdg";
+  BADGES.forEach(([id,e,n,d])=>{
+    const on=got.includes(id),f=document.createElement("div");f.className="bd"+(on?" on":"");
+    const i=document.createElement("div");i.className="bi";i.textContent=on?e:"🔒";
+    const t=document.createElement("b");t.textContent=n;
+    const sm=document.createElement("small");sm.textContent=d;
+    f.append(i,t,sm);g.appendChild(f);
+  });
+  box.appendChild(g);
+}
+function todayCh(){
+  const d=new Date(),n=Math.floor(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/864e5);
+  const L=[["memory","Play Memory match"],["focus","Play Pattern recall or Number rush"],["knowledge","Play Trivia"],["math","Play Quick math"],["logic",band()>0?"Solve a Picture puzzle or a Mystery case":"Solve a Picture puzzle"]];
+  if(band()>0)L.push(["words","Solve the Daily word"]);
+  const c=L[n%L.length];return{s:c[0],t:c[1]};
+}
+function chalUI(){
+  const el=$("chal"),c=todayCh(),done=S.ch&&S.ch.d===dayStr(new Date())&&S.ch.done;
+  el.textContent=done?"✅ Today’s challenge done: "+c.t:"⭐ Today’s challenge: "+c.t+" (+20 points)";
+}
+function calmGame(){
+  const my=gtoken,R=5;let n=0;
+  G.innerHTML='<p><b>🌬️ Calm corner</b></p><p>Sit comfortably. Breathe in while the circle grows, and out while it shrinks. We will do 5 slow breaths.</p><div class="breath" id="br">Ready?</div><p id="bm" style="text-align:center;min-height:1.4em"></p><button class="pill main" id="bs">Start</button>';
+  const el=$("br");
+  $("bs").onclick=()=>{
+    $("bs").disabled=true;n=0;
+    const cyc=()=>{
+      if(my!==gtoken||!el.isConnected)return;
+      if(n>=R){
+        el.style.transform="scale(1)";el.textContent="Well done 💛";$("bm").textContent="5 slow breaths. Nice and calm.";
+        confetti();award(10,"calm");$("bs").disabled=false;$("bs").textContent="Again";return;
+      }
+      n++;$("bm").textContent="Breath "+n+" of "+R;el.textContent="Breathe in…";
+      if(!calm()){el.style.transitionDuration="4s";el.style.transform="scale(1.6)"}
+      setTimeout(()=>{
+        if(my!==gtoken)return;
+        el.textContent="Breathe out…";
+        if(!calm()){el.style.transitionDuration="6s";el.style.transform="scale(1)"}
+        setTimeout(cyc,6000);
+      },4000);
+    };
+    cyc();
+  };
+}
+let instEv=null;
+const UA=navigator.userAgent||"";
+const isIOS=/iPad|iPhone|iPod/.test(UA)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+const inApp=/FBAN|FBAV|FB_IAB|Instagram|Line\/|; wv\)/i.test(UA);
+function isStandalone(){return matchMedia("(display-mode: standalone)").matches||navigator.standalone===true}
+function instRecent(){return S.instHide&&Date.now()-S.instHide<6048e5}
+function hideBar(){$("instBar").hidden=true;S.instHide=Date.now();save()}
+function instSteps(){
+  const st=[];
+  if(inApp)st.push(isIOS?"You opened this inside another app. Tap the Safari icon or the three dots, then choose Open in Safari.":"You opened this inside another app. Tap the three dots at the top, then choose Open in Chrome.");
+  if(isIOS)st.push("Open this page in Safari.","Tap the Share button (a square with an arrow).","Scroll down and tap Add to Home Screen.","Tap Add. The ⚡ icon appears on your phone.");
+  else st.push("Tap the three dots menu at the top right of Chrome.","Tap Install app or Add to Home screen.","Tap Install. The ⚡ icon appears on your phone.");
+  return st;
+}
+function openInst(){
+  if(instEv){instEv.prompt();instEv=null;return}
+  const ol=$("instSteps");ol.innerHTML="";
+  instSteps().forEach(t=>{const li=document.createElement("li");li.textContent=t;ol.appendChild(li)});
+  $("set").hidden=true;$("inst").hidden=false;
+}
+addEventListener("beforeinstallprompt",e=>{e.preventDefault();instEv=e});
+addEventListener("appinstalled",()=>{$("instBar").hidden=true});
+$("instBtn").onclick=openInst;$("instGo").onclick=openInst;$("instX").onclick=hideBar;
+$("instOk").onclick=()=>{$("inst").hidden=true};
+if(isStandalone())$("instBtn").hidden=true;
+setTimeout(()=>{if(!isStandalone()&&!instRecent())$("instBar").hidden=false},2500);
+if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js").catch(()=>{});
+function askAge(){$("age").hidden=false;$("ageIn").value=S.age||"";$("ageMsg").textContent="";$("ageIn").focus()}
+function applyAge(){
+  lvl=Math.min(lvl,Math.max(...lvOK()));gsel=-1;last=-1;gtoken++;
+  lvChips();gChips();
+  $("gl").hidden=true;$("gt").hidden=true;
+  G.innerHTML="<p>Pick a game above to start playing.</p>";
+  $("ageBtn").textContent="🎂 Age: "+S.age+" · change";camLabel();
+  if(!$("result").querySelector(".act"))return;
+}
+$("ageGo").onclick=()=>{
+  const v=parseInt($("ageIn").value,10);
+  if(!(v>=5)){$("ageMsg").textContent="Bored Buster is for ages 5 and up. Please type your age.";return}
+  if(v>120){$("ageMsg").textContent="Please type your real age.";return}
+  S.age=v;save();$("age").hidden=true;applyAge();
+};
+$("ageIn").onkeydown=e=>{if(e.key==="Enter")$("ageGo").click()};
+$("ageBtn").onclick=()=>{$("set").hidden=true;askAge()};
+$("gearBtn").onclick=()=>{$("set").hidden=false};
+$("setX").onclick=()=>{$("set").hidden=true};
+$("set").onclick=e=>{if(e.target===$("set"))$("set").hidden=true};
+let rsArm=false;
+$("resetBtn").onclick=()=>{
+  if(!rsArm){rsArm=true;$("resetBtn").textContent="Tap again to erase everything";setTimeout(()=>{rsArm=false;$("resetBtn").textContent="🗑 Reset my progress"},4000);return}
+  try{localStorage.removeItem(KEY);localStorage.removeItem("bbMoments")}catch(e){}
+  location.hash="";location.reload();
+};
+$("gexit").onclick=()=>{history.back();setTimeout(()=>{if(location.hash==="#play")location.replace("#games")},300)};
+if(!S.age)askAge();else applyAge();
+function track(p){
+  let n=0;
+  (function t(){
+    if(window.goatcounter&&window.goatcounter.count)window.goatcounter.count({path:p});
+    else if(n++<20)setTimeout(t,300);
+  })();
+}
+function route(){
+  const pl=location.hash==="#play";
+  if(pl&&gsel<0){location.replace("#games");return}
+  const g=location.hash==="#games"||pl;
+  track(pl?"/play":g?"/brain-games":"/home");
+  const b=location.hash==="#brain";
+  $("home").hidden=g||b;$("gamesView").hidden=!g;$("brainView").hidden=!b;
+  [["tabH",!g&&!b],["tabG",g],["tabB",b]].forEach(([id,on])=>$(id).setAttribute("aria-current",on?"page":"false"));
+  stat();renderSaved();chalUI();if(b){brain();badges();moments()}
+  if(!pl&&gsel>=0){gtoken++;gsel=-1;gChips();G.innerHTML="<p>Pick a game above to start playing.</p>";$("gt").hidden=true;$("gl").hidden=true;$("gtabs").querySelectorAll(".chip").forEach(c=>c.setAttribute("aria-pressed","false"))}
+  $("gfull").hidden=!pl;document.body.style.overflow=pl?"hidden":"";
+  window.scrollTo(0,0);
+}
+addEventListener("hashchange",route);route();
+</script>
+</body>
+</html>
