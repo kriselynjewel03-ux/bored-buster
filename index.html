@@ -78,6 +78,10 @@ details.ans[open] summary{margin-bottom:8px}
 #instBar .pill{background:#2a1a8a;color:#fff;border-color:#2a1a8a}
 #instBar .popx{position:static;color:#2a1a8a}
 .popcard ol{text-align:left;padding-left:22px;line-height:1.6;margin:0 0 16px}
+#fbTxt{width:100%;font:inherit;border:2px solid var(--acc);border-radius:12px;padding:10px;background:transparent;color:var(--cink);margin:10px 0 4px;resize:vertical}
+#fbR .pill[aria-pressed="true"]{background:var(--acc);color:#fff!important}
+#fbR{margin:12px 0}
+.dots{letter-spacing:4px;color:var(--cmute);margin:6px 0 14px}
 #toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:#2a1a8a;color:#fff;padding:12px 20px;border-radius:999px;font-weight:700;z-index:60;box-shadow:0 6px 0 rgba(0,0,0,.25);max-width:90vw;text-align:center}
 .bdg{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
 .bd{text-align:center;opacity:.5}.bd.on{opacity:1}
@@ -194,6 +198,28 @@ details.ans[open] summary{margin-bottom:8px}
 </div>
 </div>
 <div id="instBar" hidden role="region" aria-label="Install the app"><span>📲 Add Bored Buster to your phone</span><button class="pill" id="instGo">Install</button><button class="popx" id="instX" aria-label="Hide this">✕</button></div>
+<div class="popwrap" id="fb" hidden>
+<div class="popcard" role="dialog" aria-modal="true" aria-labelledby="fbT">
+<button class="popx" id="fbX" aria-label="Close">✕</button>
+<h2 id="fbT">How do you like Bored Buster?</h2>
+<div class="acts" id="fbR"></div>
+<div id="fbC" hidden>
+<textarea id="fbTxt" maxlength="400" rows="3" placeholder="What did you like? What was confusing? (optional)" aria-label="Your feedback"></textarea>
+<p class="popcat">Please don’t write names, phone numbers or other personal details.</p>
+</div>
+<button class="pill main" id="fbSend">Send</button>
+<p id="fbMsg" class="popcat" role="status" style="min-height:1.4em"></p>
+</div>
+</div>
+<div class="popwrap" id="tour" hidden>
+<div class="popcard" role="dialog" aria-modal="true" aria-labelledby="tourT">
+<div class="popemoji" id="tourE"></div>
+<h2 id="tourT" style="margin-top:10px"></h2>
+<p id="tourP" style="margin:0 0 6px"></p>
+<div class="dots" id="tourD" aria-hidden="true"></div>
+<div class="acts"><button class="pill main" id="tourNext">Next</button><button class="pill" id="tourSkip">Skip</button></div>
+</div>
+</div>
 <div class="popwrap" id="inst" hidden>
 <div class="popcard" role="dialog" aria-modal="true" aria-labelledby="instT">
 <div class="popemoji">📲</div>
@@ -212,9 +238,10 @@ details.ans[open] summary{margin-bottom:8px}
 <button class="pill" id="ageBtn">🎂 Age</button>
 <button class="pill" id="camBtn">📸 Camera</button>
 <button class="pill" id="share">📤 Share with a friend</button>
+<button class="pill" id="fbBtn">💬 Tell us what you think</button>
 <button class="pill" id="resetBtn">🗑 Reset my progress</button>
 </div>
-<p class="popcat" style="margin-top:14px">Visits are counted anonymously. Progress and pictures stay on this device. Answers are only collected from people aged 16 and over, if they choose to send them.</p>
+<p class="popcat" style="margin-top:14px">Visits are counted anonymously. Progress and pictures stay on this device. Written answers and comments are only collected from people aged 16 and over. Anyone can tap a feedback face, and no names or other details are collected.</p>
 </div>
 </div>
 <div class="gfull" id="pad" hidden>
@@ -1118,8 +1145,46 @@ addEventListener("appinstalled",()=>{$("instBar").hidden=true});
 $("instBtn").onclick=openInst;$("instGo").onclick=openInst;$("instX").onclick=hideBar;
 $("instOk").onclick=()=>{$("inst").hidden=true};
 if(isStandalone())$("instBtn").hidden=true;
-setTimeout(()=>{if(!isStandalone()&&!instRecent())$("instBar").hidden=false},2500);
+function maybeBar(){if(S.tour&&!isStandalone()&&!instRecent())$("instBar").hidden=false}
+setTimeout(maybeBar,2500);
 if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js").catch(()=>{});
+async function sendForm(a,v){
+  const fd=new URLSearchParams();fd.append("entry.2084916072",a);fd.append("entry.60325395",v);
+  await fetch(FORM_URL,{method:"POST",mode:"no-cors",body:fd});
+}
+let fbRate=0;
+function buildFb(){
+  const r=$("fbR");r.innerHTML="";
+  ["😞","😐","🙂","😀","🤩"].forEach((e,i)=>{
+    const b=document.createElement("button");b.className="pill";b.textContent=e;b.style.fontSize="1.4rem";
+    b.setAttribute("aria-label",(i+1)+" out of 5");b.setAttribute("aria-pressed",String(fbRate===i+1));
+    b.onclick=()=>{fbRate=i+1;buildFb()};r.appendChild(b);
+  });
+}
+function openFb(){fbRate=0;$("fbTxt").value="";$("fbMsg").textContent="";$("fbSend").disabled=false;$("fbC").hidden=band()<2;buildFb();$("set").hidden=true;$("fb").hidden=false}
+$("fbBtn").onclick=openFb;
+$("fbX").onclick=()=>{$("fb").hidden=true};
+$("fbSend").onclick=async()=>{
+  if(!fbRate){$("fbMsg").textContent="Please tap a face first.";return}
+  const txt=band()===2?$("fbTxt").value.trim():"";
+  $("fbSend").disabled=true;
+  try{
+    await sendForm("💬 Feedback","Rating "+fbRate+"/5"+(txt?": "+txt:""));
+    $("fbMsg").textContent="Thank you! 💛";setTimeout(()=>{$("fb").hidden=true},1400);
+  }catch(e){$("fbSend").disabled=false;$("fbMsg").textContent="Sorry, it could not be sent. Please try again later."}
+};
+const TOUR=[["👆","Pick how you feel","Choose your mood and how much time you have."],["💥","Tap the big yellow button","We will pick an activity for you. Tap Let’s do it! to start."],["🎮","Try a game","Open the Games tab for puzzles, trivia and more. Earn points, streaks and badges."]];
+let tourI=0;
+function showTour(){
+  const t=TOUR[tourI];
+  $("tourE").textContent=t[0];$("tourT").textContent=t[1];$("tourP").textContent=t[2];
+  $("tourD").textContent=TOUR.map((_,i)=>i===tourI?"●":"○").join(" ");
+  $("tourNext").textContent=tourI===TOUR.length-1?"Let’s go! 🎉":"Next";
+}
+function startTour(){tourI=0;showTour();$("tour").hidden=false}
+function endTour(){$("tour").hidden=true;S.tour=true;save();setTimeout(maybeBar,1500)}
+$("tourNext").onclick=()=>{if(tourI>=TOUR.length-1){endTour();return}tourI++;showTour()};
+$("tourSkip").onclick=endTour;
 function askAge(){$("age").hidden=false;$("ageIn").value=S.age||"";$("ageMsg").textContent="";$("ageIn").focus()}
 function applyAge(){
   lvl=Math.min(lvl,Math.max(...lvOK()));gsel=-1;last=-1;gtoken++;
@@ -1133,7 +1198,7 @@ $("ageGo").onclick=()=>{
   const v=parseInt($("ageIn").value,10);
   if(!(v>=5)){$("ageMsg").textContent="Bored Buster is for ages 5 and up. Please type your age.";return}
   if(v>120){$("ageMsg").textContent="Please type your real age.";return}
-  S.age=v;save();$("age").hidden=true;applyAge();
+  S.age=v;save();$("age").hidden=true;applyAge();if(!S.tour)setTimeout(startTour,500);
 };
 $("ageIn").onkeydown=e=>{if(e.key==="Enter")$("ageGo").click()};
 $("ageBtn").onclick=()=>{$("set").hidden=true;askAge()};
@@ -1147,7 +1212,7 @@ $("resetBtn").onclick=()=>{
   location.hash="";location.reload();
 };
 $("gexit").onclick=()=>{history.back();setTimeout(()=>{if(location.hash==="#play")location.replace("#games")},300)};
-if(!S.age)askAge();else applyAge();
+if(!S.age)askAge();else{applyAge();if(!S.tour)setTimeout(startTour,800)}
 function track(p){
   let n=0;
   (function t(){
