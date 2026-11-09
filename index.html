@@ -82,6 +82,10 @@ details.ans[open] summary{margin-bottom:8px}
 #fbR .pill[aria-pressed="true"]{background:var(--acc);color:#fff!important}
 #fbR{margin:12px 0}
 .dots{letter-spacing:4px;color:var(--cmute);margin:6px 0 14px}
+#par{z-index:36}
+#par .arena h3{margin:18px 0 6px;font-size:1.05rem;color:var(--acc)}
+#par .arena ul{margin:0 0 10px;padding-left:20px;line-height:1.55}
+#par .arena li{margin:4px 0}
 #toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:#2a1a8a;color:#fff;padding:12px 20px;border-radius:999px;font-weight:700;z-index:60;box-shadow:0 6px 0 rgba(0,0,0,.25);max-width:90vw;text-align:center}
 .bdg{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
 .bd{text-align:center;opacity:.5}.bd.on{opacity:1}
@@ -236,13 +240,46 @@ details.ans[open] summary{margin-bottom:8px}
 <button class="pill" id="instBtn">📲 Install on my phone</button>
 <p class="popcat" id="instMsg" style="margin:0"></p>
 <button class="pill" id="ageBtn">🎂 Age</button>
-<button class="pill" id="camBtn">📸 Camera</button>
+<div class="acts" style="justify-content:center"><button class="pill" id="camBtn">📸 Camera</button><button class="pill" id="soundBtn">🔊 Sounds</button></div>
 <button class="pill" id="share">📤 Share with a friend</button>
-<button class="pill" id="fbBtn">💬 Tell us what you think</button>
+<div class="acts" style="justify-content:center"><button class="pill" id="fbBtn">💬 Feedback</button><button class="pill" id="parBtn">🛡 Parents &amp; safety</button></div>
 <button class="pill" id="resetBtn">🗑 Reset my progress</button>
 </div>
 <p class="popcat" style="margin-top:14px">Visits are counted anonymously. Progress and pictures stay on this device. Written answers and comments are only collected from people aged 16 and over. Anyone can tap a feedback face, and no names or other details are collected.</p>
 </div>
+</div>
+<div class="gfull" id="par" hidden>
+<div class="gbar"><button class="pill" id="parX">✕ Close</button><b>🛡 Parents &amp; safety</b></div>
+<div class="gwrap"><div class="arena">
+<p>Bored Buster is made for ages 5 and up. Here is, in plain words, what it does and does not do.</p>
+<h3>What stays on the device</h3>
+<p>Age, points, streaks, badges, saved activities, best scores, and any pictures or drawings a player saves. These are stored only in the browser on that phone. They are not sent anywhere, and the creator cannot see them. A player can erase everything any time with <b>Reset my progress</b> in ⚙️ Settings.</p>
+<h3>What is sent</h3>
+<ul>
+<li><b>Visit counts.</b> The app counts visits anonymously with GoatCounter, a privacy-friendly tool. It does not use cookies or build profiles of people.</li>
+<li><b>Feedback faces.</b> Anyone can tap a face (😞 to 🤩). This sends only the rating.</li>
+<li><b>Written answers and comments</b> can be sent only by people who set their age to 16 or over, and only if they choose to. Nothing written is sent from younger players’ devices.</li>
+</ul>
+<p>Answers and feedback reach the creator through Google Forms. No names are asked for.</p>
+<h3>Camera and drawing</h3>
+<ul>
+<li>For ages 5 to 8, the camera is <b>off</b> until a grown-up switches it on in ⚙️ Settings.</li>
+<li>The camera takes still pictures only. No video and no sound are recorded.</li>
+<li>Pictures and drawings stay on the device. We suggest taking pictures of what was made, not of people.</li>
+</ul>
+<h3>What the app does not have</h3>
+<p>No ads, no purchases, no accounts or logins, no chat, and no way for players to contact each other. The Share button only opens the phone’s own share menu.</p>
+<h3>Tips for grown-ups</h3>
+<ul>
+<li>The age screen is a guide, not a lock. A child can type any age, so please sit with younger children, especially the first time.</li>
+<li>The app has no timer. Please set breaks and screen time that suit your family.</li>
+<li>Remind children never to share names, addresses or phone numbers online.</li>
+<li>Some activities are for feelings like sad or worried. They are gentle ideas, not medical advice. If a child’s feelings stay heavy, please talk to someone you trust or a health professional.</li>
+</ul>
+<h3>Questions or concerns?</h3>
+<p>Please ask the person who shared the app with you, or use 💬 Feedback on a device set to age 16 or over.</p>
+<p style="font-size:.8rem;color:var(--cmute)">Last updated: November 2026</p>
+</div></div>
 </div>
 <div class="gfull" id="pad" hidden>
 <div class="gbar"><button class="pill" id="padX">✕ Close</button><b id="padT" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></b></div>
@@ -413,7 +450,7 @@ function pick(){
   const p=pool[Math.floor(Math.random()*pool.length)];
   seen.add(p.i);last=p.i;return p.a;
 }
-function confetti(){
+function confetti(){sfx("win");
   if(calm())return;
   for(let i=0;i<40;i++){
     const s=document.createElement("i");s.className="cf";
@@ -539,7 +576,7 @@ function mem(){
       if(open.length<2)return;
       moves++;$("mm").textContent="Moves: "+moves;
       const [x,y]=open;open=[];
-      if(x[1]===y[1]){x[0].className=y[0].className="mc ok";if(++found===E.length)win()}
+      if(x[1]===y[1]){sfx("good");x[0].className=y[0].className="mc ok";if(++found===E.length)win()}
       else{lock=true;setTimeout(()=>{[x,y].forEach(([c])=>{c.className="mc";c.textContent="?"});lock=false},800)}
     };
     $("mg").appendChild(b);
@@ -630,8 +667,8 @@ function mth(){
   },1000);
   mi.onkeydown=e=>{
     if(e.key!=="Enter"||mi.value.trim()==="")return;
-    if(+mi.value===q[1]){sc++;cmb++;if(cmb%5===0)t+=3;$("ms").textContent="Score: "+sc;$("mm2").textContent="";ask()}
-    else{cmb=0;if(lvl>0&&band()>0&&--lives<=0)t=1;$("mm2").textContent="Try again 🤔"+(lvl>0&&band()>0?" ❤️ "+Math.max(lives,0):"");mi.select()}
+    if(+mi.value===q[1]){sfx("good");sc++;cmb++;if(cmb%5===0)t+=3;$("ms").textContent="Score: "+sc;$("mm2").textContent="";ask()}
+    else{sfx("bad");cmb=0;if(lvl>0&&band()>0&&--lives<=0)t=1;$("mm2").textContent="Try again 🤔"+(lvl>0&&band()>0?" ❤️ "+Math.max(lives,0):"");mi.select()}
   };
   ask();
 }
@@ -676,12 +713,12 @@ const DW=["tiger","plant","music","bread","cloud","dream","beach","smile","river
 function daily(){
   const d=new Date(),n=Math.floor(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/864e5),w=DW[n%DW.length];
   if(!S.daily||S.daily.n!==n)S.daily={n,g:[]};
-  const D=S.daily,CL={"🟩":"#2e9e4f","🟨":"#c9a227","⬛":"#555"};
-  const sc=g=>{const r=Array(5).fill("⬛"),u=[...w];[...g].forEach((c,i)=>{if(c===w[i]){r[i]="🟩";u[i]=null}});[...g].forEach((c,i)=>{if(r[i]==="⬛"){const j=u.indexOf(c);if(j>-1){r[i]="🟨";u[j]=null}}});return r};
+  const D=S.daily,CL={"🟦":"#1565c0","🟧":"#d96a00","⬛":"#555"},MK={"🟦":"✓","🟧":"↔","⬛":"·"},LB={"🟦":"right spot","🟧":"wrong spot","⬛":"not in the word"};
+  const sc=g=>{const r=Array(5).fill("⬛"),u=[...w];[...g].forEach((c,i)=>{if(c===w[i]){r[i]="🟦";u[i]=null}});[...g].forEach((c,i)=>{if(r[i]==="⬛"){const j=u.indexOf(c);if(j>-1){r[i]="🟧";u[j]=null}}});return r};
   function draw(){
     const won=D.g.includes(w),over=won||D.g.length>=6;
-    let h='<p><b>📅 Daily word</b>: guess the 5-letter word in 6 tries. Same word for everyone today!</p>';
-    h+=D.g.map(g=>{const r=sc(g);return '<div style="text-align:center">'+[...g].map((c,i)=>'<span style="display:inline-block;width:2.4rem;padding:4px 0;margin:2px;border-radius:8px;font-weight:700;color:#fff;background:'+CL[r[i]]+'">'+c.toUpperCase()+'</span>').join("")+'</div>'}).join("");
+    let h='<p><b>📅 Daily word</b>: guess the 5-letter word in 6 tries. Same word for everyone today!</p><p style="font-size:.85rem">Blue ✓ = right spot. Orange ↔ = right letter, wrong spot.</p>';
+    h+=D.g.map(g=>{const r=sc(g);return '<div style="text-align:center">'+[...g].map((c,i)=>'<span role="img" aria-label="'+c+', '+LB[r[i]]+'" style="display:inline-block;width:2.4rem;padding:4px 0;margin:2px;border-radius:8px;font-weight:700;color:#fff;background:'+CL[r[i]]+'">'+c.toUpperCase()+'<small style="display:block;font-size:.7rem;line-height:1">'+MK[r[i]]+'</small></span>').join("")+'</div>'}).join("");
     h+=over?'<p style="margin-top:12px"><b>'+(won?"Solved in "+D.g.length+"! 🎉":"The word was "+w.toUpperCase()+".")+' Come back tomorrow!</b></p><button class="pill main" id="ds">📤 Share result</button>':'<input class="inp" id="dw" maxlength="5" autocomplete="off" autocapitalize="off" aria-label="Your guess" style="margin-top:12px"><p id="dm" style="text-align:center;min-height:1.4em"></p><button class="pill main" id="dg">Guess ('+(6-D.g.length)+' left)</button>';
     G.innerHTML=h;
     if(over)$("ds").onclick=async()=>{
@@ -817,7 +854,7 @@ function tri(){
       const b=document.createElement("button");b.className="pill opt";b.textContent=o;
       b.onclick=()=>{
         document.querySelectorAll("#to .opt").forEach(x=>{x.disabled=true;if(x.textContent===ok)x.classList.add("good")});
-        if(o===ok){sc++;cmb++;bonus+=cmb>1?(cmb-1)*[2,3,5][lvl]:0}else{b.classList.add("bad");cmb=0;lives--;if(lvl>0&&band()>0&&lives<=0)i=Q.length}
+        if(o===ok){sfx("good");sc++;cmb++;bonus+=cmb>1?(cmb-1)*[2,3,5][lvl]:0}else{sfx("bad");b.classList.add("bad");cmb=0;lives--;if(lvl>0&&band()>0&&lives<=0)i=Q.length}
         i++;setTimeout(next,1100);
       };
       $("to").appendChild(b);
@@ -875,7 +912,13 @@ const KT=[
 const KT2=[
 ["Which planet do we live on?","Earth",["Mars","Moon","Sun"]],["How many months are in a year?","12",["10","11","13"]],["Which is the biggest animal in the ocean?","Blue whale",["Shark","Dolphin","Octopus"]],["What is 10 plus 5?","15",["14","16","20"]],["What is the capital of the Philippines?","Manila",["Cebu","Davao","Baguio"]],["Which of these can fly?","Bat",["Cow","Penguin","Dog"]]
 ];
-const KTL=[KT.slice(0,6),KT.slice(6,12),KT.slice(12).concat(KT2)];
+const KE=[["Which animal says meow?","Cat",["Cow","Fish","Bird"]],["What color is a banana?","Yellow",["Blue","Purple","Black"]],["How many eyes do you have?","2",["1","3","4"]],["Which one is a fruit?","Apple",["Chair","Shoe","Spoon"]],["What do you wear on your feet?","Shoes",["Hat","Gloves","Scarf"]],["What is the opposite of hot?","Cold",["Warm","Sunny","Loud"]]];
+const KM=[["How many fingers are on one hand?","5",["4","6","10"]],["Which animal lives on a farm?","Chicken",["Whale","Tiger","Penguin"]],["Which is the biggest?","Elephant",["Ant","Dog","Cat"]],["What do we use to see?","Eyes",["Ears","Nose","Hands"]],["Which shape has 3 sides?","Triangle",["Circle","Square","Star"]],["What day comes after Monday?","Tuesday",["Sunday","Friday","Wednesday"]]];
+const KH=[["What is half of 10?","5",["2","4","6"]],["Which planet is closest to the Sun?","Mercury",["Earth","Mars","Neptune"]],["What do caterpillars turn into?","Butterflies",["Bees","Birds","Frogs"]],["Which is the tallest animal?","Giraffe",["Elephant","Horse","Bear"]]];
+const KTL=[KT.slice(0,6).concat(KE),KT.slice(6,12).concat(KM),KT.slice(12).concat(KT2,KH)];
+TX[0].push(["What is the capital of Thailand?","Bangkok",["Hanoi","Manila","Jakarta"]],["Which organ do we use to breathe?","Lungs",["Heart","Stomach","Liver"]],["How many minutes are in an hour?","60",["30","100","90"]],["Which animal is known for black and white stripes?","Zebra",["Tiger","Panda","Leopard"]],["What is the capital of Italy?","Rome",["Milan","Venice","Naples"]],["How many hours are in a day?","24",["12","20","48"]]);
+TX[1].push(["Who painted Starry Night?","Vincent van Gogh",["Claude Monet","Pablo Picasso","Rembrandt"]],["Which country has the most people in Southeast Asia?","Indonesia",["Philippines","Vietnam","Thailand"]],["At what temperature does water boil at sea level, in Celsius?","100",["90","80","120"]],["Who is said to have discovered gravity after an apple fell?","Isaac Newton",["Albert Einstein","Galileo","Aristotle"]],["What is the capital of Egypt?","Cairo",["Alexandria","Giza","Luxor"]],["How many sides does a hexagon have?","6",["5","7","8"]],["Which gas do plants take in from the air?","Carbon dioxide",["Oxygen","Nitrogen","Helium"]]);
+TX[2].push(["Who wrote the novel 1984?","George Orwell",["Aldous Huxley","Ray Bradbury","H. G. Wells"]],["What is the capital of Switzerland?","Bern",["Zurich","Geneva","Basel"]],["Which element has the symbol K?","Potassium",["Krypton","Calcium","Phosphorus"]],["In which year did the Soviet Union dissolve?","1991",["1989","1993","1985"]],["Which ancient wonder stood in Alexandria?","The Lighthouse of Pharos",["Colossus","Hanging Gardens","Temple of Artemis"]],["What is the longest bone in the human body?","Femur",["Tibia","Humerus","Spine"]],["Who was the first woman to win a Nobel Prize?","Marie Curie",["Rosalind Franklin","Mother Teresa","Ada Lovelace"]]);
 const LDK=[["4 pairs","6 pairs","8 pairs"],["Very slow, 1 step to start","Slow","A bit faster"],["Short words","Everyday words","Long words"],["Adding up to 6","Adding and taking away up to 10","Bigger numbers and easy times tables"],["Animals and colors","Easy facts about the world","Trickier facts"],["A gentle random game","A bit harder","A bigger challenge"],null,["4 lives","3 lives","2 lives"],["3×3 grid","3×4 grid","4×4 grid"],["4 pieces","6 pieces","9 pieces"]];
 function loadMoments(){try{return JSON.parse(localStorage.getItem("bbMoments")||"[]")}catch(e){return[]}}
 function saveMoment(x,m){
@@ -946,7 +989,7 @@ $("camShot").onclick=()=>{
 $("camSkip").onclick=stopCam;
 $("camFlip").onclick=()=>{camFace=camFace==="environment"?"user":"environment";startCam()};
 function camOn(){return S.cam===undefined?band()>0:S.cam}
-function camLabel(){$("camBtn").textContent=camOn()?"📸 Camera after activities: on":"📸 Camera after activities: off"}
+function camLabel(){$("camBtn").textContent=camOn()?"📸 Camera: on":"📸 Camera: off"}
 $("camBtn").onclick=()=>{S.cam=!camOn();save();camLabel()};
 camLabel();
 function scene(n){
@@ -1067,7 +1110,7 @@ const BADGES=[
 ["champ","🌟","Challenge Champ","Finish 3 daily challenges",()=>(S.chDone||0)>=3]
 ];
 function nn(k){return (S.n&&S.n[k])||0}
-function toast(t){const el=$("toast");el.textContent=t;el.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>{el.hidden=true},3500)}
+function toast(t){sfx("badge");const el=$("toast");el.textContent=t;el.hidden=false;clearTimeout(toast.h);toast.h=setTimeout(()=>{el.hidden=true},3500)}
 function checkBadges(){
   S.badges=S.badges||[];
   BADGES.forEach(([id,e,n,d,f])=>{if(!S.badges.includes(id)&&f()){S.badges.push(id);toast("🏅 New badge: "+n)}});
@@ -1148,6 +1191,23 @@ if(isStandalone())$("instBtn").hidden=true;
 function maybeBar(){if(S.tour&&!isStandalone()&&!instRecent())$("instBar").hidden=false}
 setTimeout(maybeBar,2500);
 if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js").catch(()=>{});
+let AC=null;
+function sfx(kind){
+  if(S.sound===false)return;
+  try{
+    AC=AC||new (window.AudioContext||window.webkitAudioContext)();
+    const seq={good:[[660,0,.12],[880,.12,.16]],bad:[[220,0,.2]],win:[[523,0,.1],[659,.1,.1],[784,.2,.1],[1047,.3,.25]],badge:[[784,0,.12],[988,.12,.12],[1319,.24,.25]]}[kind]||[];
+    seq.forEach(([f,t,d])=>{
+      const o=AC.createOscillator(),g=AC.createGain(),n=AC.currentTime+t;
+      o.type="sine";o.frequency.value=f;
+      g.gain.setValueAtTime(.0001,n);g.gain.exponentialRampToValueAtTime(.12,n+.02);g.gain.exponentialRampToValueAtTime(.0001,n+d);
+      o.connect(g);g.connect(AC.destination);o.start(n);o.stop(n+d+.02);
+    });
+  }catch(e){}
+}
+function soundLabel(){$("soundBtn").textContent=S.sound===false?"🔊 Sounds: off":"🔊 Sounds: on"}
+$("soundBtn").onclick=()=>{S.sound=(S.sound===false);save();soundLabel();sfx("good")};
+soundLabel();
 async function sendForm(a,v){
   const fd=new URLSearchParams();fd.append("entry.2084916072",a);fd.append("entry.60325395",v);
   await fetch(FORM_URL,{method:"POST",mode:"no-cors",body:fd});
@@ -1185,6 +1245,8 @@ function startTour(){tourI=0;showTour();$("tour").hidden=false}
 function endTour(){$("tour").hidden=true;S.tour=true;save();setTimeout(maybeBar,1500)}
 $("tourNext").onclick=()=>{if(tourI>=TOUR.length-1){endTour();return}tourI++;showTour()};
 $("tourSkip").onclick=endTour;
+$("parBtn").onclick=()=>{$("set").hidden=true;$("par").hidden=false;document.body.style.overflow="hidden";$("par").scrollTop=0};
+$("parX").onclick=()=>{$("par").hidden=true;document.body.style.overflow=location.hash==="#play"?"hidden":""};
 function askAge(){$("age").hidden=false;$("ageIn").value=S.age||"";$("ageMsg").textContent="";$("ageIn").focus()}
 function applyAge(){
   lvl=Math.min(lvl,Math.max(...lvOK()));gsel=-1;last=-1;gtoken++;
