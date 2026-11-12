@@ -111,7 +111,7 @@ details.ans[open] summary{margin-bottom:8px}
 .mom img{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:14px;display:block}
 .mom figcaption{font-size:.8rem;color:var(--cmute);margin:4px 0 6px}
 .gfull{position:fixed;inset:0;z-index:25;overflow-y:auto;background:linear-gradient(160deg,var(--g1),var(--g2))}
-.gbar{position:sticky;top:0;z-index:2;display:flex;align-items:center;gap:12px;padding:calc(10px + env(safe-area-inset-top,0px)) 16px 10px;background:rgba(0,0,0,.28);backdrop-filter:blur(8px);color:#fff}
+.gbar{position:sticky;top:0;z-index:2;display:flex;align-items:center;gap:12px;padding:calc(10px + env(safe-area-inset-top,0px)) 16px 10px;background:var(--g1);color:#fff}
 .gbar b{font-size:1.05rem}
 #gexit,#padX{background:#fff;color:#2a1a8a;border-color:#fff}
 #pad{z-index:36}
@@ -657,7 +657,7 @@ function mth(){
     const k=R(6),x=R(400)+400,y=R(300)+50,n=R(15)+11,q=R(12)+6,d=R(9)+3,p=[10,20,25,50][R(4)],base=(R(10)+2)*20;
     return k===0?[(a+10)+" × "+b,(a+10)*b]:k===1?["("+a+" + "+b+") × "+c,(a+b)*c]:k===2?[x+" − "+y,x-y]:k===3?[n+" × "+n,n*n]:k===4?[(q*d)+" ÷ "+d,q]:[p+"% of "+base,base*p/100];
   }
-  G.innerHTML='<div class="info"><span id="ms">Score: 0</span><span id="mt">⏱ 30</span></div><div class="scr" id="mq"></div><input class="inp" id="mi" inputmode="numeric" autocomplete="off" aria-label="Your answer"><p id="mm2" style="text-align:center;min-height:1.5em;margin-top:10px"></p>';
+  G.innerHTML='<div class="info"><span id="ms">Score: 0</span><span id="mt">⏱ 30</span></div><div class="scr" id="mq"></div><input class="inp" id="mi" inputmode="numeric" autocomplete="off" aria-label="Your answer"><p id="mm2" style="text-align:center;min-height:1.5em;margin-top:10px"></p><button class="pill main" id="mk">Check</button>';
   const mt=$("mt"),mi=$("mi");
   function ask(){q=gen();$("mq").textContent=q[0]+" = ?";mi.value="";mi.focus()}
   const iv=setInterval(()=>{
@@ -665,6 +665,7 @@ function mth(){
     mt.textContent="⏱ "+(--t);
     if(t<=0){clearInterval(iv);G.innerHTML='<p><b>Time is up! Score: '+sc+' 🎉</b></p><button class="pill main" id="again">Play again</button>';if(sc>=8)confetti();award(sc*[3,5,8][lvl],"math");addChallenge("Quick math",sc+" correct answers");$("again").onclick=mth}
   },1000);
+  $("mk").onclick=()=>mi.onkeydown({key:"Enter"});
   mi.onkeydown=e=>{
     if(e.key!=="Enter"||mi.value.trim()==="")return;
     if(+mi.value===q[1]){sfx("good");sc++;cmb++;if(cmb%5===0)t+=3;$("ms").textContent="Score: "+sc;$("mm2").textContent="";ask()}
@@ -1065,13 +1066,13 @@ function padCtx(){return $("padC").getContext("2d")}
 function openPad(a){
   pAct=a;pSnap=[];$("pad").hidden=false;document.body.style.overflow="hidden";
   $("padT").textContent=a?"✏️ "+a[0]:"✏️ Drawing pad";
-  const c=$("padC"),dpr=window.devicePixelRatio||1;
+  const c=$("padC"),dpr=Math.min(window.devicePixelRatio||1,2);
   c.width=Math.round(c.clientWidth*dpr);c.height=Math.round(c.clientHeight*dpr);
   padCtx().fillStyle="#fff";padCtx().fillRect(0,0,c.width,c.height);
   $("padMsg").textContent="";buildTools();
 }
 function closePad(){$("pad").hidden=true;document.body.style.overflow=location.hash==="#play"?"hidden":""}
-function snap(){const c=$("padC");pSnap.push(padCtx().getImageData(0,0,c.width,c.height));if(pSnap.length>15)pSnap.shift()}
+function snap(){const c=$("padC");pSnap.push(padCtx().getImageData(0,0,c.width,c.height));if(pSnap.length>8)pSnap.shift()}
 function padUndo(){const s=pSnap.pop();if(s)padCtx().putImageData(s,0,0)}
 function padClear(){const c=$("padC");snap();padCtx().fillStyle="#fff";padCtx().fillRect(0,0,c.width,c.height)}
 function padSave(){
@@ -1273,7 +1274,25 @@ $("resetBtn").onclick=()=>{
   try{localStorage.removeItem(KEY);localStorage.removeItem("bbMoments")}catch(e){}
   location.hash="";location.reload();
 };
-$("gexit").onclick=()=>{history.back();setTimeout(()=>{if(location.hash==="#play")location.replace("#games")},300)};
+function fitGame(){
+  const v=window.visualViewport,g=$("gfull");
+  if(!v)return;
+  if(g.hidden){g.style.top="";g.style.height="";return}
+  g.style.top=v.offsetTop+"px";g.style.height=v.height+"px";g.style.bottom="auto";
+}
+if(window.visualViewport){
+  window.visualViewport.addEventListener("resize",fitGame);
+  window.visualViewport.addEventListener("scroll",fitGame);
+}
+addEventListener("focusin",()=>{setTimeout(fitGame,50)});
+addEventListener("focusout",()=>{setTimeout(fitGame,50)});
+function exitGame(){
+  gtoken++;gsel=-1;
+  $("gfull").hidden=true;document.body.style.overflow="";fitGame();
+  try{G.innerHTML="<p>Pick a game.</p>";$("gl").hidden=true;$("gt").hidden=true;gChips()}catch(e){}
+  if(location.hash==="#play"){history.back();setTimeout(()=>{if(location.hash==="#play")location.replace("#games")},400)}
+}
+$("gexit").onclick=exitGame;
 if(!S.age)askAge();else{applyAge();if(!S.tour)setTimeout(startTour,800)}
 function track(p){
   let n=0;
@@ -1284,6 +1303,7 @@ function track(p){
 }
 function route(){
   const pl=location.hash==="#play";
+  $("gfull").hidden=!(pl&&gsel>=0);document.body.style.overflow=(pl&&gsel>=0)?"hidden":"";fitGame();
   if(pl&&gsel<0){location.replace("#games");return}
   const g=location.hash==="#games"||pl;
   track(pl?"/play":g?"/brain-games":"/home");
